@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Painel TV - Contraste Diurno</title>
+    <title>Painel TV - GPS Mobile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -223,9 +223,7 @@
         function createCardHTML(data, themeColor) {
             const borderClass = themeColor === 'DIURNO' ? 'border-yellow-500' : 'border-indigo-500';
             
-            // --- CORREÇÃO DE CONTRASTE AQUI ---
-            // Se for DIURNO: Fundo amarelo vibrante e Texto PRETO
-            // Se for NOTURNO: Fundo índigo e Texto BRANCO
+            // CORREÇÃO DE CONTRASTE AQUI:
             const badgeClass = themeColor === 'DIURNO' 
                 ? 'bg-yellow-500 text-black' 
                 : 'bg-indigo-600 text-white';
@@ -234,6 +232,16 @@
             const cardBackground = isViagem ? "bg-[#1f1717] border-r-4 border-r-rose-900/50" : "bg-gray-900";
             const sinStyle = getSignStyle(data.SINALIZACAO);
             const uniqueId = `weather-${data.ID}`;
+
+            // --- BOTÕES DE LINK (SÓ MOBILE) ---
+            // Verifica se tem link e cria botão
+            const btnCam = data.LINK_CAM && data.LINK_CAM.length > 5 
+                ? `<a href="${data.LINK_CAM}" target="_blank" class="md:hidden ml-auto bg-blue-600/80 p-1 rounded hover:bg-blue-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-3 h-3 text-white"></i></a>` 
+                : '';
+            
+            const btnApoio = data.LINK_APOIO && data.LINK_APOIO.length > 5 
+                ? `<a href="${data.LINK_APOIO}" target="_blank" class="md:hidden ml-auto bg-green-600/80 p-1 rounded hover:bg-green-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-3 h-3 text-white"></i></a>` 
+                : '';
 
             return `
             <div class="${cardBackground} border-l-[4px] md:border-l-[8px] ${borderClass} rounded-r-xl px-2 py-2 md:px-3 md:py-2 shadow-2xl flex flex-col justify-between min-h-[140px] md:h-full fade-enter-active relative overflow-hidden group transition-colors duration-500 mb-0">
@@ -256,13 +264,17 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2 mt-1 z-10 flex-grow content-center">
-                    <div class="bg-slate-800/50 p-1.5 rounded-lg border border-blue-900/50">
-                        <div class="flex items-center gap-1.5 mb-0.5 text-blue-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-blue"><i data-lucide="truck" class="w-3 h-3 md:w-4 md:h-4"></i> Caminhão</div>
+                    <div class="bg-slate-800/50 p-1.5 rounded-lg border border-blue-900/50 relative">
+                        <div class="flex items-center gap-1.5 mb-0.5 text-blue-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-blue">
+                            <i data-lucide="truck" class="w-3 h-3 md:w-4 md:h-4"></i> Caminhão
+                            ${btnCam} </div>
                         <div class="text-lg md:text-2xl text-white font-mono font-bold leading-none tracking-wide truncate">${data.PLACA_CAM}</div>
                         <div class="text-blue-300 text-[10px] md:text-xs mt-0.5 font-semibold truncate">${data.CAMINHAO}</div>
                     </div>
-                    <div class="bg-slate-800/50 p-1.5 rounded-lg border border-green-900/50">
-                        <div class="flex items-center gap-1.5 mb-0.5 text-green-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-green"><i data-lucide="car" class="w-3 h-3 md:w-4 md:h-4"></i> Apoio</div>
+                    <div class="bg-slate-800/50 p-1.5 rounded-lg border border-green-900/50 relative">
+                        <div class="flex items-center gap-1.5 mb-0.5 text-green-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-green">
+                            <i data-lucide="car" class="w-3 h-3 md:w-4 md:h-4"></i> Apoio
+                            ${btnApoio} </div>
                         <div class="text-lg md:text-2xl text-white font-mono font-bold leading-none tracking-wide truncate">${data.PLACA_APOIO}</div>
                         <div class="text-green-300 text-[10px] md:text-xs mt-0.5 font-semibold truncate">${data.APOIO}</div>
                     </div>
@@ -353,7 +365,10 @@
                 let d = { 
                     ID: index, DATA: row[0], TURNO_RAW: row[1], VIAGEM: row[2], 
                     OBRA: row[3], REGIAO: row[4], SIN: row[5], EQUIPE: row[6],  
-                    P_CAM: row[7], CAM: row[8], EQUIP: row[9], P_APOIO: row[10], APOIO: row[11]   
+                    P_CAM: row[7], CAM: row[8], EQUIP: row[9], P_APOIO: row[10], APOIO: row[11],
+                    // NOVAS COLUNAS PARA LINKS (O=14, P=15)
+                    LINK_CAM: row[14] || "",
+                    LINK_APOIO: row[15] || ""
                 };
                 const colObra = (d.OBRA || "").toString().toUpperCase();
                 const isLongText = colObra.length > 25; 
@@ -367,7 +382,8 @@
                     TYPE: currentSection, ID: d.ID, DATA: d.DATA || "", VIAGEM: d.VIAGEM || "", 
                     OBRA: d.OBRA || "---", REGIAO: d.REGIAO || "", SINALIZACAO: d.SIN || "", 
                     EQUIPE: d.EQUIPE || "", PLACA_CAM: d.P_CAM || "---", CAMINHAO: d.CAM || "",
-                    EQUIP: d.EQUIP || "---", PLACA_APOIO: d.P_APOIO || "---", APOIO: d.APOIO || ""
+                    EQUIP: d.EQUIP || "---", PLACA_APOIO: d.P_APOIO || "---", APOIO: d.APOIO || "",
+                    LINK_CAM: d.LINK_CAM, LINK_APOIO: d.LINK_APOIO
                 };
                 if (currentSection === 'DIURNO') dayItems.push(item); else nightItems.push(item);
             });
@@ -435,8 +451,8 @@
 
         function loadMockData() {
             const mockCSV = [
-                ["29/12/2025", "TURNO-D", "", "OBRA EXEMPLO (SEM CONEXÃO)", "SAO PAULO", "VERTICAL", "EQUIPE ALFA", "ABC-1234", "VW 8.150", "EQUIPAMENTO X", "XYZ-9876", "FIAT UNO"],
-                ["29/12/2025", "TURNO-D", "", "MANUTENÇÃO", "JUNDIAI", "HORIZONTAL", "EQUIPE BETA", "DEF-5678", "MERCEDES", "EQUIPAMENTO Y", "GHI-1234", "GOL"]
+                ["29/12/2025", "TURNO-D", "", "OBRA EXEMPLO (SEM CONEXÃO)", "SAO PAULO", "VERTICAL", "EQUIPE ALFA", "ABC-1234", "VW 8.150", "EQUIPAMENTO X", "XYZ-9876", "FIAT UNO", "", "", "", ""],
+                ["29/12/2025", "TURNO-D", "", "MANUTENÇÃO", "JUNDIAI", "HORIZONTAL", "EQUIPE BETA", "DEF-5678", "MERCEDES", "EQUIPAMENTO Y", "GHI-1234", "GOL", "", "", "", ""]
             ];
             processData(mockCSV);
             document.getElementById('debug-status').innerText = "MODO OFFLINE";
