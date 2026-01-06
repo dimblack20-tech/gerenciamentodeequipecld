@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Painel Gerenciamento de Equipes CLD</title>
+    <title>Painel TV - GPS Mobile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -223,7 +223,6 @@
         function createCardHTML(data, themeColor) {
             const borderClass = themeColor === 'DIURNO' ? 'border-yellow-500' : 'border-indigo-500';
             
-            // CORREÇÃO DE CONTRASTE AQUI:
             const badgeClass = themeColor === 'DIURNO' 
                 ? 'bg-yellow-500 text-black' 
                 : 'bg-indigo-600 text-white';
@@ -234,7 +233,6 @@
             const uniqueId = `weather-${data.ID}`;
 
             // --- BOTÕES DE LINK (SÓ MOBILE) ---
-            // Verifica se tem link e cria botão
             const btnCam = data.LINK_CAM && data.LINK_CAM.length > 5 
                 ? `<a href="${data.LINK_CAM}" target="_blank" class="md:hidden ml-auto bg-blue-600/80 p-1 rounded hover:bg-blue-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-3 h-3 text-white"></i></a>` 
                 : '';
@@ -366,9 +364,9 @@
                     ID: index, DATA: row[0], TURNO_RAW: row[1], VIAGEM: row[2], 
                     OBRA: row[3], REGIAO: row[4], SIN: row[5], EQUIPE: row[6],  
                     P_CAM: row[7], CAM: row[8], EQUIP: row[9], P_APOIO: row[10], APOIO: row[11],
-                    // NOVAS COLUNAS PARA LINKS (O=14, P=15)
-                    LINK_CAM: row[14] || "",
-                    LINK_APOIO: row[15] || ""
+                    // === ATUALIZADO AQUI ===
+                    LINK_CAM: row[7] || "",   // Link na Coluna H (Índice 7)
+                    LINK_APOIO: row[15] || "" // Link na Coluna P (Índice 15)
                 };
                 const colObra = (d.OBRA || "").toString().toUpperCase();
                 const isLongText = colObra.length > 25; 
@@ -387,6 +385,7 @@
                 };
                 if (currentSection === 'DIURNO') dayItems.push(item); else nightItems.push(item);
             });
+            
             slides = [];
             for (let i = 0; i < dayItems.length; i += MAX_ITEMS) slides.push({ type: 'DIURNO', items: dayItems.slice(i, i + MAX_ITEMS) });
             for (let i = 0; i < nightItems.length; i += MAX_ITEMS) slides.push({ type: 'NOTURNO', items: nightItems.slice(i, i + MAX_ITEMS) });
