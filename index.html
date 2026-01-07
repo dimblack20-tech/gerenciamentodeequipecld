@@ -94,7 +94,8 @@
     <script>
         const SLIDE_DURATION = 15; 
         const MAX_ITEMS = 6;
-        const GOOGLE_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSyjL1-2gPDomF8BJK_rsdVBHjP9VYposkyL8Plxk0bjOcCoUGDWwd9PncCvYuAHdRWQjGftH9pFBgN/pub?output=csv";
+        // LINK ATUALIZADO AQUI:
+        const GOOGLE_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSrIAzEFpEZV1t2A5FDqY5OuJSc1LX7-4I0hFMUoL3iPoRTSr-JKeyIIhvCH5ZYzYWSLR9g35OUnnC/pub?output=csv";
         const PROXY_URL = "https://corsproxy.io/?"; 
 
         const cityCache = {}; 
@@ -464,7 +465,6 @@
 
         function loadMockData() {
             // MOCK DATA ATUALIZADO PARA A NOVA ORDEM (16 COLUNAS)
-            // A=DATA, B=TURNO, C=EQUIPE, D=VIAGEM, E=OBRA, F=REGIAO, G=SIN, H=PLACA-C ... O=LINK-C, P=LINK-A
             const mockCSV = [
                 ["29/12/2025", "TURNO-D", "EQUIPE ALFA", "", "OBRA EXEMPLO (SEM CONEXÃO)", "SAO PAULO", "VERTICAL", "ABC-1234", "VW 8.150", "EQUIPAMENTO X", "XYZ-9876", "FIAT UNO", "", "", "", ""],
                 ["29/12/2025", "TURNO-D", "EQUIPE BETA", "", "MANUTENÇÃO", "JUNDIAI", "HORIZONTAL", "DEF-5678", "MERCEDES", "EQUIPAMENTO Y", "GHI-1234", "GOL", "", "", "", ""]
