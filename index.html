@@ -360,14 +360,28 @@
         function processData(rows) {
             let dayItems = []; let nightItems = [];
             rows.forEach((row, index) => {
+                // MAPEAMENTO ATUALIZADO (A=0 ... P=15)
                 let d = { 
-                    ID: index, DATA: row[0], TURNO_RAW: row[1], VIAGEM: row[2], 
-                    OBRA: row[3], REGIAO: row[4], SIN: row[5], EQUIPE: row[6],  
-                    P_CAM: row[7], CAM: row[8], EQUIP: row[9], P_APOIO: row[10], APOIO: row[11],
-                    // === ATUALIZADO AQUI ===
-                    LINK_CAM: row[7] || "",   // Link na Coluna H (Índice 7)
-                    LINK_APOIO: row[15] || "" // Link na Coluna P (Índice 15)
+                    ID: index, 
+                    DATA: row[0],       // A
+                    TURNO_RAW: row[1],  // B
+                    EQUIPE: row[2],     // C (EQUIPE AGORA É COLUNA C)
+                    VIAGEM: row[3],     // D
+                    OBRA: row[4],       // E
+                    REGIAO: row[5],     // F
+                    SIN: row[6],        // G
+                    
+                    P_CAM: row[7],      // H (PLACA-C)
+                    CAM: row[8],        // I
+                    EQUIP: row[9],      // J
+                    P_APOIO: row[10],   // K (PLACA-A)
+                    APOIO: row[11],     // L
+
+                    // LINKS DE LOCALIZAÇÃO (O e P)
+                    LINK_CAM: row[14] || "",   // O - LOCALIZAÇÃO CAMINHÃO
+                    LINK_APOIO: row[15] || ""  // P - LOCALIZAÇÃO APOIO
                 };
+
                 const colObra = (d.OBRA || "").toString().toUpperCase();
                 const isLongText = colObra.length > 25; 
                 if ((colObra.includes("HORIZONTAL") || colObra.includes("VERTICAL")) && !isLongText) return; 
@@ -449,9 +463,11 @@
         }
 
         function loadMockData() {
+            // MOCK DATA ATUALIZADO PARA A NOVA ORDEM (16 COLUNAS)
+            // A=DATA, B=TURNO, C=EQUIPE, D=VIAGEM, E=OBRA, F=REGIAO, G=SIN, H=PLACA-C ... O=LINK-C, P=LINK-A
             const mockCSV = [
-                ["29/12/2025", "TURNO-D", "", "OBRA EXEMPLO (SEM CONEXÃO)", "SAO PAULO", "VERTICAL", "EQUIPE ALFA", "ABC-1234", "VW 8.150", "EQUIPAMENTO X", "XYZ-9876", "FIAT UNO", "", "", "", ""],
-                ["29/12/2025", "TURNO-D", "", "MANUTENÇÃO", "JUNDIAI", "HORIZONTAL", "EQUIPE BETA", "DEF-5678", "MERCEDES", "EQUIPAMENTO Y", "GHI-1234", "GOL", "", "", "", ""]
+                ["29/12/2025", "TURNO-D", "EQUIPE ALFA", "", "OBRA EXEMPLO (SEM CONEXÃO)", "SAO PAULO", "VERTICAL", "ABC-1234", "VW 8.150", "EQUIPAMENTO X", "XYZ-9876", "FIAT UNO", "", "", "", ""],
+                ["29/12/2025", "TURNO-D", "EQUIPE BETA", "", "MANUTENÇÃO", "JUNDIAI", "HORIZONTAL", "DEF-5678", "MERCEDES", "EQUIPAMENTO Y", "GHI-1234", "GOL", "", "", "", ""]
             ];
             processData(mockCSV);
             document.getElementById('debug-status').innerText = "MODO OFFLINE";
