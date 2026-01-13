@@ -29,10 +29,6 @@
         .neon-text-green { text-shadow: 0 0 5px rgba(74, 222, 128, 0.5); }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Remove sublinhado dos links de edição */
-        a.edit-link { text-decoration: none; cursor: pointer; }
-        a.edit-link:hover { opacity: 0.9; }
     </style>
 </head>
 <body class="flex flex-col p-2 md:p-3 pb-2 mobile-scroll">
@@ -89,10 +85,13 @@
         </div>
     </main>
 
-    <button onclick="manualPrev()" class="fixed top-1/2 left-0 -translate-y-1/2 z-50 p-2 md:p-3 rounded-r-xl transition-all duration-300 transform active:scale-95 text-white/70 bg-black/20 md:bg-transparent md:text-white/10 md:hover:text-white md:hover:bg-gray-800/90 backdrop-blur-sm md:backdrop-blur-none border border-white/10 md:border-transparent">
+    <button onclick="manualPrev()" class="fixed top-1/2 left-0 -translate-y-1/2 z-50 p-2 md:p-3 rounded-r-xl transition-all duration-300 transform active:scale-95
+        text-white/70 bg-black/20 md:bg-transparent md:text-white/10 md:hover:text-white md:hover:bg-gray-800/90 backdrop-blur-sm md:backdrop-blur-none border border-white/10 md:border-transparent">
         <i data-lucide="chevron-left" class="w-8 h-8 md:w-10 md:h-10"></i>
     </button>
-    <button onclick="manualNext()" class="fixed top-1/2 right-0 -translate-y-1/2 z-50 p-2 md:p-3 rounded-l-xl transition-all duration-300 transform active:scale-95 text-white/70 bg-black/20 md:bg-transparent md:text-white/10 md:hover:text-white md:hover:bg-gray-800/90 backdrop-blur-sm md:backdrop-blur-none border border-white/10 md:border-transparent">
+
+    <button onclick="manualNext()" class="fixed top-1/2 right-0 -translate-y-1/2 z-50 p-2 md:p-3 rounded-l-xl transition-all duration-300 transform active:scale-95
+        text-white/70 bg-black/20 md:bg-transparent md:text-white/10 md:hover:text-white md:hover:bg-gray-800/90 backdrop-blur-sm md:backdrop-blur-none border border-white/10 md:border-transparent">
         <i data-lucide="chevron-right" class="w-8 h-8 md:w-10 md:h-10"></i>
     </button>
     
@@ -104,10 +103,6 @@
         const MAX_ITEMS = 6;
         const GOOGLE_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSrIAzEFpEZV1t2A5FDqY5OuJSc1LX7-4I0hFMUoL3iPoRTSr-JKeyIIhvCH5ZYzYWSLR9g35OUnnC/pub?output=csv";
         const PROXY_URL = "https://corsproxy.io/?"; 
-        
-        // CONFIGURAÇÃO DOS LINKS DE EDIÇÃO
-        const SHEET_ID = "1e8tN0Y-QWUntvNik5BzdFOSZnv_08HZGAgoLDFWTV24";
-        const SHEET_GID = "358359268";
 
         const cityCache = {}; 
         const weatherCache = {}; 
@@ -244,15 +239,7 @@
             const sinStyle = getSignStyle(data.SINALIZACAO);
             const uniqueId = `weather-${data.ID}`;
 
-            // --- LINKS DE EDIÇÃO (CORRIGIDO) ---
-            // Adicionamos +1 porque a planilha começa em 1, mas o array em 0
-            const rowNum = parseInt(data.ID) + 1;
-            
-            const linkEquipe = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit#gid=${SHEET_GID}&range=C${rowNum}`;
-            const linkCaminhao = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit#gid=${SHEET_GID}&range=H${rowNum}`;
-            const linkApoio = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit#gid=${SHEET_GID}&range=K${rowNum}`;
-
-            // --- BOTÕES DE LINK (GPS) SÓ MOBILE ---
+            // --- BOTÕES DE LINK (SÓ MOBILE) ---
             const btnCam = data.LINK_CAM && data.LINK_CAM.length > 5 
                 ? `<a href="${data.LINK_CAM}" target="_blank" class="md:hidden ml-auto bg-blue-600/80 p-1 rounded hover:bg-blue-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-3 h-3 text-white"></i></a>` 
                 : '';
@@ -274,28 +261,28 @@
                             <div id="${uniqueId}" class="transition-opacity duration-500 min-h-[20px] md:min-h-[24px]"></div>
                         </div>
                         <div class="mt-1 flex justify-between items-center">
-                             <div class="w-full">
-                                <a href="${linkEquipe}" target="_blank" class="edit-link text-xl md:text-3xl font-bold text-white tracking-wide block leading-none truncate hover:text-yellow-400 transition-colors" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${data.EQUIPE || 'EQUIPE'}</a>
+                             <div>
+                                <span class="text-xl md:text-3xl font-bold text-white tracking-wide block leading-none truncate" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${data.EQUIPE || 'EQUIPE'}</span>
                                 <span class="${sinStyle.color} mt-1 text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow inline-flex items-center gap-1 tracking-wide"><i data-lucide="${sinStyle.icon}" class="w-3 h-3"></i> ${sinStyle.label}</span>
                              </div>
                         </div>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2 mt-1 z-10 flex-grow content-center">
-                    <a href="${linkCaminhao}" target="_blank" class="edit-link block bg-slate-800/50 p-1.5 rounded-lg border border-blue-900/50 relative hover:border-blue-400 transition-colors">
+                    <div class="bg-slate-800/50 p-1.5 rounded-lg border border-blue-900/50 relative">
                         <div class="flex items-center gap-1.5 mb-0.5 text-blue-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-blue">
                             <i data-lucide="truck" class="w-3 h-3 md:w-4 md:h-4"></i> Caminhão
                             ${btnCam} </div>
                         <div class="text-lg md:text-2xl text-white font-mono font-bold leading-none tracking-wide truncate">${data.PLACA_CAM}</div>
                         <div class="text-blue-300 text-[10px] md:text-xs mt-0.5 font-semibold truncate">${data.CAMINHAO}</div>
-                    </a>
-                    <a href="${linkApoio}" target="_blank" class="edit-link block bg-slate-800/50 p-1.5 rounded-lg border border-green-900/50 relative hover:border-green-400 transition-colors">
+                    </div>
+                    <div class="bg-slate-800/50 p-1.5 rounded-lg border border-green-900/50 relative">
                         <div class="flex items-center gap-1.5 mb-0.5 text-green-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-green">
                             <i data-lucide="car" class="w-3 h-3 md:w-4 md:h-4"></i> Apoio
                             ${btnApoio} </div>
                         <div class="text-lg md:text-2xl text-white font-mono font-bold leading-none tracking-wide truncate">${data.PLACA_APOIO}</div>
                         <div class="text-green-300 text-[10px] md:text-xs mt-0.5 font-semibold truncate">${data.APOIO}</div>
-                    </a>
+                    </div>
                 </div>
                 <div class="mt-1 pt-1 border-t border-gray-800 z-10 shrink-0">
                     <p class="text-gray-400 text-[10px] md:text-sm leading-snug line-clamp-1 font-medium">${data.EQUIP}</p>
@@ -380,26 +367,26 @@
         function processData(rows) {
             let dayItems = []; let nightItems = [];
             rows.forEach((row, index) => {
-                if(!row || row.length < 2) return; // Segurança contra linhas vazias
-
+                // MAPEAMENTO ATUALIZADO (A=0 ... P=15)
                 let d = { 
                     ID: index, 
                     DATA: row[0],       // A
                     TURNO_RAW: row[1],  // B
-                    EQUIPE: row[2],     // C 
+                    EQUIPE: row[2],     // C (EQUIPE AGORA É COLUNA C)
                     VIAGEM: row[3],     // D
                     OBRA: row[4],       // E
                     REGIAO: row[5],     // F
                     SIN: row[6],        // G
                     
-                    P_CAM: row[7],      // H 
+                    P_CAM: row[7],      // H (PLACA-C)
                     CAM: row[8],        // I
                     EQUIP: row[9],      // J
-                    P_APOIO: row[10],   // K 
+                    P_APOIO: row[10],   // K (PLACA-A)
                     APOIO: row[11],     // L
 
-                    LINK_CAM: row[14] || "",   // O 
-                    LINK_APOIO: row[15] || ""  // P 
+                    // LINKS DE LOCALIZAÇÃO (O e P)
+                    LINK_CAM: row[14] || "",   // O - LOCALIZAÇÃO CAMINHÃO
+                    LINK_APOIO: row[15] || ""  // P - LOCALIZAÇÃO APOIO
                 };
 
                 const colObra = (d.OBRA || "").toString().toUpperCase();
@@ -462,7 +449,7 @@
                     .then(csv => {
                         Papa.parse(csv, { 
                             header: false, 
-                            skipEmptyLines: false, // IMPORTANTE: MANTÉM LINHAS VAZIAS PARA INDEX CORRETO
+                            skipEmptyLines: true, 
                             encoding: "UTF-8", 
                             complete: (results) => { processData(results.data); }
                         }); 
@@ -483,7 +470,7 @@
         }
 
         function loadMockData() {
-            // MOCK DATA ATUALIZADO
+            // MOCK DATA ATUALIZADO PARA A NOVA ORDEM (16 COLUNAS)
             const mockCSV = [
                 ["29/12/2025", "TURNO-D", "EQUIPE ALFA", "", "OBRA EXEMPLO (SEM CONEXÃO)", "SAO PAULO", "VERTICAL", "ABC-1234", "VW 8.150", "EQUIPAMENTO X", "XYZ-9876", "FIAT UNO", "", "", "", ""],
                 ["29/12/2025", "TURNO-D", "EQUIPE BETA", "", "MANUTENÇÃO", "JUNDIAI", "HORIZONTAL", "DEF-5678", "MERCEDES", "EQUIPAMENTO Y", "GHI-1234", "GOL", "", "", "", ""]
