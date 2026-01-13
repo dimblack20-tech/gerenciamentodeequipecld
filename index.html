@@ -29,6 +29,10 @@
         .neon-text-green { text-shadow: 0 0 5px rgba(74, 222, 128, 0.5); }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Estilo para remover o sublinhado padrão dos links de edição */
+        a.edit-link { text-decoration: none; cursor: pointer; }
+        a.edit-link:hover { opacity: 0.8; }
     </style>
 </head>
 <body class="flex flex-col p-2 md:p-3 pb-2 mobile-scroll">
@@ -85,13 +89,10 @@
         </div>
     </main>
 
-    <button onclick="manualPrev()" class="fixed top-1/2 left-0 -translate-y-1/2 z-50 p-2 md:p-3 rounded-r-xl transition-all duration-300 transform active:scale-95
-        text-white/70 bg-black/20 md:bg-transparent md:text-white/10 md:hover:text-white md:hover:bg-gray-800/90 backdrop-blur-sm md:backdrop-blur-none border border-white/10 md:border-transparent">
+    <button onclick="manualPrev()" class="fixed top-1/2 left-0 -translate-y-1/2 z-50 p-2 md:p-3 rounded-r-xl transition-all duration-300 transform active:scale-95 text-white/70 bg-black/20 md:bg-transparent md:text-white/10 md:hover:text-white md:hover:bg-gray-800/90 backdrop-blur-sm md:backdrop-blur-none border border-white/10 md:border-transparent">
         <i data-lucide="chevron-left" class="w-8 h-8 md:w-10 md:h-10"></i>
     </button>
-
-    <button onclick="manualNext()" class="fixed top-1/2 right-0 -translate-y-1/2 z-50 p-2 md:p-3 rounded-l-xl transition-all duration-300 transform active:scale-95
-        text-white/70 bg-black/20 md:bg-transparent md:text-white/10 md:hover:text-white md:hover:bg-gray-800/90 backdrop-blur-sm md:backdrop-blur-none border border-white/10 md:border-transparent">
+    <button onclick="manualNext()" class="fixed top-1/2 right-0 -translate-y-1/2 z-50 p-2 md:p-3 rounded-l-xl transition-all duration-300 transform active:scale-95 text-white/70 bg-black/20 md:bg-transparent md:text-white/10 md:hover:text-white md:hover:bg-gray-800/90 backdrop-blur-sm md:backdrop-blur-none border border-white/10 md:border-transparent">
         <i data-lucide="chevron-right" class="w-8 h-8 md:w-10 md:h-10"></i>
     </button>
     
@@ -103,6 +104,10 @@
         const MAX_ITEMS = 6;
         const GOOGLE_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSrIAzEFpEZV1t2A5FDqY5OuJSc1LX7-4I0hFMUoL3iPoRTSr-JKeyIIhvCH5ZYzYWSLR9g35OUnnC/pub?output=csv";
         const PROXY_URL = "https://corsproxy.io/?"; 
+        
+        // CONFIGURAÇÃO DE EDIÇÃO (DEEP LINK)
+        const SHEET_ID = "1e8tN0Y-QWUntvNik5BzdFOSZnv_08HZGAgoLDFWTV24";
+        const SHEET_GID = "358359268";
 
         const cityCache = {}; 
         const weatherCache = {}; 
@@ -239,7 +244,15 @@
             const sinStyle = getSignStyle(data.SINALIZACAO);
             const uniqueId = `weather-${data.ID}`;
 
-            // --- BOTÕES DE LINK (SÓ MOBILE) ---
+            // --- LINKS DE EDIÇÃO ---
+            // Linha da planilha = Índice + 1 (Ajuste básico)
+            const rowNum = parseInt(data.ID) + 1;
+            
+            const linkEquipe = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit#gid=${SHEET_GID}&range=C${rowNum}`;
+            const linkCaminhao = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit#gid=${SHEET_GID}&range=H${rowNum}`;
+            const linkApoio = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit#gid=${SHEET_GID}&range=K${rowNum}`;
+
+            // --- BOTÕES DE LINK (GPS) SÓ MOBILE ---
             const btnCam = data.LINK_CAM && data.LINK_CAM.length > 5 
                 ? `<a href="${data.LINK_CAM}" target="_blank" class="md:hidden ml-auto bg-blue-600/80 p-1 rounded hover:bg-blue-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-3 h-3 text-white"></i></a>` 
                 : '';
@@ -261,28 +274,28 @@
                             <div id="${uniqueId}" class="transition-opacity duration-500 min-h-[20px] md:min-h-[24px]"></div>
                         </div>
                         <div class="mt-1 flex justify-between items-center">
-                             <div>
-                                <span class="text-xl md:text-3xl font-bold text-white tracking-wide block leading-none truncate" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${data.EQUIPE || 'EQUIPE'}</span>
+                             <div class="w-full">
+                                <a href="${linkEquipe}" target="_blank" class="edit-link text-xl md:text-3xl font-bold text-white tracking-wide block leading-none truncate hover:text-yellow-400 transition-colors" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${data.EQUIPE || 'EQUIPE'}</a>
                                 <span class="${sinStyle.color} mt-1 text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow inline-flex items-center gap-1 tracking-wide"><i data-lucide="${sinStyle.icon}" class="w-3 h-3"></i> ${sinStyle.label}</span>
                              </div>
                         </div>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2 mt-1 z-10 flex-grow content-center">
-                    <div class="bg-slate-800/50 p-1.5 rounded-lg border border-blue-900/50 relative">
+                    <a href="${linkCaminhao}" target="_blank" class="edit-link block bg-slate-800/50 p-1.5 rounded-lg border border-blue-900/50 relative hover:border-blue-400 transition-colors">
                         <div class="flex items-center gap-1.5 mb-0.5 text-blue-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-blue">
                             <i data-lucide="truck" class="w-3 h-3 md:w-4 md:h-4"></i> Caminhão
                             ${btnCam} </div>
                         <div class="text-lg md:text-2xl text-white font-mono font-bold leading-none tracking-wide truncate">${data.PLACA_CAM}</div>
                         <div class="text-blue-300 text-[10px] md:text-xs mt-0.5 font-semibold truncate">${data.CAMINHAO}</div>
-                    </div>
-                    <div class="bg-slate-800/50 p-1.5 rounded-lg border border-green-900/50 relative">
+                    </a>
+                    <a href="${linkApoio}" target="_blank" class="edit-link block bg-slate-800/50 p-1.5 rounded-lg border border-green-900/50 relative hover:border-green-400 transition-colors">
                         <div class="flex items-center gap-1.5 mb-0.5 text-green-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-green">
                             <i data-lucide="car" class="w-3 h-3 md:w-4 md:h-4"></i> Apoio
                             ${btnApoio} </div>
                         <div class="text-lg md:text-2xl text-white font-mono font-bold leading-none tracking-wide truncate">${data.PLACA_APOIO}</div>
                         <div class="text-green-300 text-[10px] md:text-xs mt-0.5 font-semibold truncate">${data.APOIO}</div>
-                    </div>
+                    </a>
                 </div>
                 <div class="mt-1 pt-1 border-t border-gray-800 z-10 shrink-0">
                     <p class="text-gray-400 text-[10px] md:text-sm leading-snug line-clamp-1 font-medium">${data.EQUIP}</p>
