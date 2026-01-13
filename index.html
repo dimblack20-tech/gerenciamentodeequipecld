@@ -30,7 +30,6 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Estilo para remover o sublinhado padrão dos links de edição */
         a.edit-link { text-decoration: none; cursor: pointer; }
         a.edit-link:hover { opacity: 0.8; }
     </style>
@@ -105,7 +104,6 @@
         const GOOGLE_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSrIAzEFpEZV1t2A5FDqY5OuJSc1LX7-4I0hFMUoL3iPoRTSr-JKeyIIhvCH5ZYzYWSLR9g35OUnnC/pub?output=csv";
         const PROXY_URL = "https://corsproxy.io/?"; 
         
-        // CONFIGURAÇÃO DE EDIÇÃO (DEEP LINK)
         const SHEET_ID = "1e8tN0Y-QWUntvNik5BzdFOSZnv_08HZGAgoLDFWTV24";
         const SHEET_GID = "358359268";
 
@@ -244,8 +242,7 @@
             const sinStyle = getSignStyle(data.SINALIZACAO);
             const uniqueId = `weather-${data.ID}`;
 
-            // --- LINKS DE EDIÇÃO ---
-            // Linha da planilha = Índice + 1 (Ajuste básico)
+            // --- LINKS DE EDIÇÃO (CORRIGIDO PARA INDEX ZERO) ---
             const rowNum = parseInt(data.ID) + 1;
             
             const linkEquipe = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit#gid=${SHEET_GID}&range=C${rowNum}`;
@@ -380,26 +377,26 @@
         function processData(rows) {
             let dayItems = []; let nightItems = [];
             rows.forEach((row, index) => {
-                // MAPEAMENTO ATUALIZADO (A=0 ... P=15)
+                if(!row || row.length < 2) return; // Segurança contra linhas vazias
+
                 let d = { 
                     ID: index, 
                     DATA: row[0],       // A
                     TURNO_RAW: row[1],  // B
-                    EQUIPE: row[2],     // C (EQUIPE AGORA É COLUNA C)
+                    EQUIPE: row[2],     // C 
                     VIAGEM: row[3],     // D
                     OBRA: row[4],       // E
                     REGIAO: row[5],     // F
                     SIN: row[6],        // G
                     
-                    P_CAM: row[7],      // H (PLACA-C)
+                    P_CAM: row[7],      // H 
                     CAM: row[8],        // I
                     EQUIP: row[9],      // J
-                    P_APOIO: row[10],   // K (PLACA-A)
+                    P_APOIO: row[10],   // K 
                     APOIO: row[11],     // L
 
-                    // LINKS DE LOCALIZAÇÃO (O e P)
-                    LINK_CAM: row[14] || "",   // O - LOCALIZAÇÃO CAMINHÃO
-                    LINK_APOIO: row[15] || ""  // P - LOCALIZAÇÃO APOIO
+                    LINK_CAM: row[14] || "",   // O 
+                    LINK_APOIO: row[15] || ""  // P 
                 };
 
                 const colObra = (d.OBRA || "").toString().toUpperCase();
@@ -462,7 +459,7 @@
                     .then(csv => {
                         Papa.parse(csv, { 
                             header: false, 
-                            skipEmptyLines: true, 
+                            skipEmptyLines: false, // IMPORTANTE: MANTÉM SINCRONIA DE LINHAS
                             encoding: "UTF-8", 
                             complete: (results) => { processData(results.data); }
                         }); 
@@ -483,7 +480,7 @@
         }
 
         function loadMockData() {
-            // MOCK DATA ATUALIZADO PARA A NOVA ORDEM (16 COLUNAS)
+            // MOCK DATA ATUALIZADO
             const mockCSV = [
                 ["29/12/2025", "TURNO-D", "EQUIPE ALFA", "", "OBRA EXEMPLO (SEM CONEXÃO)", "SAO PAULO", "VERTICAL", "ABC-1234", "VW 8.150", "EQUIPAMENTO X", "XYZ-9876", "FIAT UNO", "", "", "", ""],
                 ["29/12/2025", "TURNO-D", "EQUIPE BETA", "", "MANUTENÇÃO", "JUNDIAI", "HORIZONTAL", "DEF-5678", "MERCEDES", "EQUIPAMENTO Y", "GHI-1234", "GOL", "", "", "", ""]
