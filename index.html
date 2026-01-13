@@ -85,6 +85,13 @@
         </div>
     </main>
 
+    <button onclick="manualPrev()" class="hidden md:flex fixed top-1/2 left-2 -translate-y-1/2 z-50 text-white/10 hover:text-white hover:bg-gray-800/80 p-3 rounded-full transition-all duration-300 transform hover:scale-110 border border-transparent hover:border-gray-600">
+        <i data-lucide="chevron-left" class="w-10 h-10"></i>
+    </button>
+    <button onclick="manualNext()" class="hidden md:flex fixed top-1/2 right-2 -translate-y-1/2 z-50 text-white/10 hover:text-white hover:bg-gray-800/80 p-3 rounded-full transition-all duration-300 transform hover:scale-110 border border-transparent hover:border-gray-600">
+        <i data-lucide="chevron-right" class="w-10 h-10"></i>
+    </button>
+
     <button onclick="manualPrev()" class="md:hidden fixed bottom-6 left-6 bg-blue-600/90 text-white p-4 rounded-full shadow-[0_0_20px_rgba(37,99,235,0.6)] z-50 hover:bg-blue-500 active:scale-95 transition-all border border-blue-400 backdrop-blur-sm"><i data-lucide="chevron-left" class="w-8 h-8"></i></button>
     <button onclick="manualNext()" class="md:hidden fixed bottom-6 right-6 bg-blue-600/90 text-white p-4 rounded-full shadow-[0_0_20px_rgba(37,99,235,0.6)] z-50 hover:bg-blue-500 active:scale-95 transition-all border border-blue-400 backdrop-blur-sm"><i data-lucide="chevron-right" class="w-8 h-8"></i></button>
     
@@ -94,7 +101,6 @@
     <script>
         const SLIDE_DURATION = 15; 
         const MAX_ITEMS = 6;
-        // LINK ATUALIZADO AQUI:
         const GOOGLE_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSrIAzEFpEZV1t2A5FDqY5OuJSc1LX7-4I0hFMUoL3iPoRTSr-JKeyIIhvCH5ZYzYWSLR9g35OUnnC/pub?output=csv";
         const PROXY_URL = "https://corsproxy.io/?"; 
 
