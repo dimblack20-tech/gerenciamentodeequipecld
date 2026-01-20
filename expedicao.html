@@ -31,8 +31,9 @@
         .custom-scroll::-webkit-scrollbar-track { background: #1f2937; }
         .custom-scroll::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 10px; }
         
-        .material-item { border-bottom: 1px solid rgba(75, 85, 99, 0.4); }
-        .material-item:last-child { border-bottom: none; }
+        /* Neon Effects */
+        .neon-text-yellow { text-shadow: 0 0 10px rgba(234, 179, 8, 0.5); }
+        .neon-text-indigo { text-shadow: 0 0 10px rgba(99, 102, 241, 0.5); }
     </style>
 </head>
 <body class="flex flex-col p-2 md:p-3 pb-2 mobile-scroll">
@@ -99,62 +100,34 @@
         const MAX_ITEMS = 6;
         const GOOGLE_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSrIAzEFpEZV1t2A5FDqY5OuJSc1LX7-4I0hFMUoL3iPoRTSr-JKeyIIhvCH5ZYzYWSLR9g35OUnnC/pub?output=csv";
         
-        // --- SISTEMA DE CLIMA ---
+        // --- CLIMA (MANTIDO) ---
         const cityCache = {}; const weatherCache = {}; const BASE_LAT = "-23.565"; const BASE_LON = "-46.520"; 
-        
-        function updateBaseWeather() {
-            fetchWeather(BASE_LAT, BASE_LON).then(data => {
-                if(!data) return;
-                document.getElementById('weather-temp-gen').innerText = Math.round(data.temp) + "°";
-                document.getElementById('weather-max-gen').innerText = `⬆${data.max}°`;
-                document.getElementById('weather-min-gen').innerText = `⬇${data.min}°`;
-                document.getElementById('weather-icon-gen').setAttribute('data-lucide', getWeatherIconName(data.code));
-                document.getElementById('weather-box-general').classList.remove('hidden');
-                lucide.createIcons();
-            });
-        }
-        function getWeatherIconName(code) {
-            if (code >= 0 && code <= 3) return 'cloud-sun';
-            if (code >= 45 && code <= 48) return 'cloud-fog';
-            if (code >= 51 && code <= 67) return 'cloud-rain';
-            if (code >= 71 && code <= 77) return 'snowflake';
-            if (code >= 80 && code <= 99) return 'cloud-lightning';
-            return 'sun';
-        }
-        async function fetchWeather(lat, lon) {
-            const cacheKey = `${lat},${lon}`; const now = Date.now();
-            if (weatherCache[cacheKey] && (now - weatherCache[cacheKey].timestamp < 600000)) return weatherCache[cacheKey].data;
-            try {
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=America%2FSao_Paulo&forecast_days=1`;
-                const res = await fetch(url);
-                const json = await res.json();
-                const data = { temp: Math.round(json.current.temperature_2m), code: json.current.weather_code, min: Math.round(json.daily.temperature_2m_min[0]), max: Math.round(json.daily.temperature_2m_max[0]) };
-                weatherCache[cacheKey] = { timestamp: now, data: data };
-                return data;
-            } catch (e) { return null; }
-        }
-        
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-        }
+        function updateBaseWeather() { fetchWeather(BASE_LAT, BASE_LON).then(data => { if(!data) return; document.getElementById('weather-temp-gen').innerText = Math.round(data.temp) + "°"; document.getElementById('weather-max-gen').innerText = `⬆${data.max}°`; document.getElementById('weather-min-gen').innerText = `⬇${data.min}°`; document.getElementById('weather-icon-gen').setAttribute('data-lucide', getWeatherIconName(data.code)); document.getElementById('weather-box-general').classList.remove('hidden'); lucide.createIcons(); }); }
+        function getWeatherIconName(code) { if (code >= 0 && code <= 3) return 'cloud-sun'; if (code >= 45 && code <= 48) return 'cloud-fog'; if (code >= 51 && code <= 67) return 'cloud-rain'; if (code >= 71 && code <= 77) return 'snowflake'; if (code >= 80 && code <= 99) return 'cloud-lightning'; return 'sun'; }
+        async function fetchWeather(lat, lon) { const cacheKey = `${lat},${lon}`; const now = Date.now(); if (weatherCache[cacheKey] && (now - weatherCache[cacheKey].timestamp < 600000)) return weatherCache[cacheKey].data; try { const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=America%2FSao_Paulo&forecast_days=1`; const res = await fetch(url); const json = await res.json(); const data = { temp: Math.round(json.current.temperature_2m), code: json.current.weather_code, min: Math.round(json.daily.temperature_2m_min[0]), max: Math.round(json.daily.temperature_2m_max[0]) }; weatherCache[cacheKey] = { timestamp: now, data: data }; return data; } catch (e) { return null; } }
+        function updateClock() { const now = new Date(); document.getElementById('clock').innerText = now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }
         setInterval(updateClock, 1000); updateClock(); updateBaseWeather(); setInterval(updateBaseWeather, 600000);
 
-        // --- LÓGICA DO SLIDE ---
+        // --- LÓGICA PRINCIPAL ---
         let slides = []; let currentSlideIndex = 0;
 
         function createCardHTML(data, themeColor) {
             const borderClass = themeColor === 'DIURNO' ? 'border-yellow-500' : 'border-indigo-500';
-            const badgeClass = themeColor === 'DIURNO' ? 'bg-yellow-500 text-black' : 'bg-indigo-600 text-white';
+            const textNeonClass = themeColor === 'DIURNO' ? 'text-yellow-400 neon-text-yellow' : 'text-indigo-300 neon-text-indigo';
             
-            // Lógica da Lista de Carga
+            // 1. LIMPEZA DO TÍTULO (Remove o texto entre parenteses para ficar só PLACA + ÍCONE)
+            // Ex: "☀️ ABC-1234 (DIURNO)" vira "☀️ ABC-1234"
+            let tituloLimpo = data.ROTULO.replace(/\(.*\)/, '').trim();
+
+            // 2. LÓGICA DA LISTA INTELIGENTE (COLUNAS)
             let contentHTML = "";
             if (data.CARGA_LISTA && data.CARGA_LISTA.length > 5) {
                 const itens = data.CARGA_LISTA.split(/\r?\n|,/); 
-                contentHTML = `<ul class="w-full">`;
+                // 'columns-1 md:columns-2' faz a lista se dividir se for grande
+                contentHTML = `<ul class="w-full columns-1 md:columns-2 gap-3 space-y-1">`;
                 itens.forEach(item => {
                     if(item.trim().length > 0) {
-                        contentHTML += `<li class="material-item py-1.5 flex items-start gap-2 text-sm md:text-base text-gray-300 leading-tight">
+                        contentHTML += `<li class="break-inside-avoid bg-black/20 rounded px-2 py-1.5 text-sm md:text-lg text-gray-200 border-l-2 ${themeColor === 'DIURNO' ? 'border-yellow-500/50' : 'border-indigo-500/50'} leading-tight">
                             ${item.trim()}
                         </li>`;
                     }
@@ -162,57 +135,49 @@
                 contentHTML += `</ul>`;
             } else {
                 contentHTML = `<div class="h-full flex flex-col items-center justify-center text-gray-600 opacity-50">
-                    <i data-lucide="clipboard-x" class="w-8 h-8 md:w-12 md:h-12 mb-2"></i>
+                    <i data-lucide="clipboard-x" class="w-10 h-10 md:w-16 md:h-16 mb-2"></i>
                     <span class="text-xs md:text-sm font-bold uppercase tracking-widest">Aguardando Carga</span>
                 </div>`;
             }
 
             return `
-            <div class="bg-gray-900 border-l-[4px] md:border-l-[8px] ${borderClass} rounded-r-xl px-2 py-2 md:px-3 md:py-2 shadow-2xl flex flex-col h-full fade-enter-active relative overflow-hidden group transition-colors duration-500">
-                <div class="flex justify-between items-start z-10 shrink-0 mb-2 border-b border-gray-800 pb-2">
-                    <div class="w-full">
-                        <div class="flex justify-between items-center w-full">
-                            <span class="${badgeClass} text-sm md:text-lg font-bold px-2 py-0.5 rounded shadow inline-block tracking-wide truncate w-full text-center">
-                                ${data.ROTULO || data.PLACA_CAM || 'S/ PLACA'}
-                            </span>
-                        </div>
-                        <div class="mt-1 flex justify-between items-center px-1">
-                             <span class="text-xs text-gray-400 font-bold tracking-wider uppercase">${data.OBRA}</span>
-                             <span class="text-[10px] text-gray-600">${data.EQUIPE}</span>
-                        </div>
-                    </div>
+            <div class="bg-gray-900 border-l-[6px] md:border-l-[10px] ${borderClass} rounded-r-xl px-2 py-2 md:px-4 md:py-3 shadow-2xl flex flex-col h-full fade-enter-active relative overflow-hidden group transition-colors duration-500">
+                
+                <div class="flex justify-between items-center z-10 shrink-0 mb-2 border-b border-gray-800 pb-2">
+                    <span class="text-3xl md:text-5xl font-bold text-white tracking-wider truncate drop-shadow-md">
+                        ${tituloLimpo}
+                    </span>
                 </div>
+                
                 <div class="flex-grow bg-slate-800/30 rounded-lg border border-gray-700/30 p-2 relative overflow-hidden">
                     <div class="absolute inset-0 overflow-y-auto custom-scroll p-2">
                         ${contentHTML}
                     </div>
                 </div>
+
+                <div class="mt-2 pt-2 border-t border-gray-800 z-10 shrink-0 flex flex-col">
+                     <span class="text-xl md:text-3xl font-bold ${textNeonClass} tracking-wide truncate">
+                        ${data.EQUIPE}
+                     </span>
+                     <span class="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider truncate">
+                        ${data.OBRA}
+                     </span>
+                </div>
             </div>`;
         }
 
+        // --- NAVEGAÇÃO (MANTIDA) ---
         function manualPrev() { if(window.slideInterval) clearInterval(window.slideInterval); prevSlide(); window.slideInterval = setInterval(nextSlide, SLIDE_DURATION * 1000); }
         function manualNext() { if(window.slideInterval) clearInterval(window.slideInterval); nextSlide(); window.slideInterval = setInterval(nextSlide, SLIDE_DURATION * 1000); }
-        function prevSlide() {
-            if (slides.length > 1) { currentSlideIndex = (currentSlideIndex === 0) ? slides.length - 1 : currentSlideIndex - 1; renderSlide(); }
-            resetBar();
-        }
-        function nextSlide() {
-            if (slides.length > 0 && currentSlideIndex >= slides.length - 1) { atualizarDados(); }
-            if (slides.length > 1) { currentSlideIndex = (currentSlideIndex + 1) % slides.length; renderSlide(); } 
-            resetBar();
-        }
-        function resetBar() {
-            const bar = document.getElementById('progress-bar');
-            bar.style.transition = 'none'; bar.style.width = '0%';
-            setTimeout(() => { bar.style.transition = `width ${SLIDE_DURATION}s linear`; bar.style.width = '100%'; }, 50);
-        }
+        function prevSlide() { if (slides.length > 1) { currentSlideIndex = (currentSlideIndex === 0) ? slides.length - 1 : currentSlideIndex - 1; renderSlide(); } resetBar(); }
+        function nextSlide() { if (slides.length > 0 && currentSlideIndex >= slides.length - 1) { atualizarDados(); } if (slides.length > 1) { currentSlideIndex = (currentSlideIndex + 1) % slides.length; renderSlide(); } resetBar(); }
+        function resetBar() { const bar = document.getElementById('progress-bar'); bar.style.transition = 'none'; bar.style.width = '0%'; setTimeout(() => { bar.style.transition = `width ${SLIDE_DURATION}s linear`; bar.style.width = '100%'; }, 50); }
 
         function renderSlide() {
             if (slides.length === 0) return;
             document.getElementById('loading').style.display = 'none';
             const slide = slides[currentSlideIndex];
             const title = document.getElementById('page-title');
-            
             document.getElementById('header-date').innerText = slide.items.length > 0 ? slide.items[0].DATA : "--/--";
             document.getElementById('page-count').innerText = `PÁGINA ${currentSlideIndex + 1} / ${slides.length}`;
 
@@ -236,11 +201,7 @@
         function processData(rows) {
             let dayItems = []; let nightItems = [];
             rows.forEach((row, index) => {
-                
-                // --- ATENÇÃO: AQUI ESTÃO OS ÍNDICES CORRETOS AGORA ---
-                // Coluna T = índice 19 (TV_ROTULO)
-                // Coluna U = índice 20 (TV_CARGA)
-                
+                // INDICES DAS COLUNAS (T=19, U=20)
                 let d = { 
                     ID: index, 
                     DATA: row[0], 
@@ -248,10 +209,8 @@
                     EQUIPE: row[2], 
                     OBRA: row[4], 
                     PLACA_CAM: row[7],
-                    
-                    // Lendo as colunas novas
-                    ROTULO: row[19] || row[1] + " - " + row[7], 
-                    CARGA_LISTA: row[20] || "" 
+                    ROTULO: row[19] || "☀️ " + row[7], // Tenta coluna T, se falhar improvisa
+                    CARGA_LISTA: row[20] || ""        // Tenta coluna U
                 };
 
                 if (!d.EQUIPE || d.EQUIPE === "EQUIPE" || d.EQUIPE === "") return; 
@@ -268,30 +227,20 @@
             for (let i = 0; i < nightItems.length; i += MAX_ITEMS) slides.push({ type: 'NOTURNO', items: nightItems.slice(i, i + MAX_ITEMS) });
             
             currentSlideIndex = 0;
-            if (slides.length > 0) {
-                renderSlide();
-                if(window.slideInterval) clearInterval(window.slideInterval);
-                if(slides.length > 1) { window.slideInterval = setInterval(nextSlide, SLIDE_DURATION * 1000); }
-            } else { loadMockData(); }
+            if (slides.length > 0) { renderSlide(); if(window.slideInterval) clearInterval(window.slideInterval); if(slides.length > 1) { window.slideInterval = setInterval(nextSlide, SLIDE_DURATION * 1000); } } else { loadMockData(); }
         }
 
         function atualizarDados() {
             const uniqueID = Date.now();
             const googleUrlNoCache = GOOGLE_CSV + "&cb=" + uniqueID;
-            const urls = [
-                "https://corsproxy.io/?" + encodeURIComponent(googleUrlNoCache),
-                "https://api.allorigins.win/raw?url=" + encodeURIComponent(googleUrlNoCache)
-            ];
-
+            const urls = [ "https://corsproxy.io/?" + encodeURIComponent(googleUrlNoCache), "https://api.allorigins.win/raw?url=" + encodeURIComponent(googleUrlNoCache) ];
             let attempt = 0;
             function tryFetch() {
                 if (attempt >= urls.length) { loadMockData(); return; }
                 document.getElementById('debug-status').innerText = `Sincronizando...`;
                 fetch(urls[attempt], { cache: "no-store" })
                     .then(res => res.ok ? res.text() : Promise.reject())
-                    .then(csv => {
-                        Papa.parse(csv, { header: false, skipEmptyLines: true, complete: (results) => processData(results.data) }); 
-                    })
+                    .then(csv => { Papa.parse(csv, { header: false, skipEmptyLines: true, complete: (results) => processData(results.data) }); })
                     .catch(() => { attempt++; tryFetch(); });
             }
             tryFetch();
@@ -299,13 +248,12 @@
 
         function loadMockData() {
             const mockCSV = [
-                ["29/12/2025", "TURNO-D", "EQUIPE ALFA", "", "OBRA EXEMPLO", "", "", "ABC-1234", "", "", "", "", "", "", "", "", "", "", "", "☀️ ABC-1234 (DIURNO)", "📦 Tinta: 20 LATA\n📦 Cones: 50 UN"],
-                ["29/12/2025", "TURNO-N", "EQUIPE BETA", "", "MANUTENÇÃO", "", "", "DEF-9999", "", "", "", "", "", "", "", "", "", "", "", "🌙 DEF-9999 (NOTURNO)", "📦 Tinta Preta: 10 LATA"]
+                ["20/01/2026", "TURNO-D", "EQUIPE EXEMPLO", "", "OBRA TESTE", "", "", "ABC-1234", "", "", "", "", "", "", "", "", "", "", "", "☀️ ABC-1234 (DIURNO)", "📦 Tinta: 20 LATA\n📦 Cones: 50 UN\n📦 Item 3\n📦 Item 4\n📦 Item 5"],
+                ["20/01/2026", "TURNO-N", "EQUIPE BETA", "", "MANUTENÇÃO", "", "", "DEF-9999", "", "", "", "", "", "", "", "", "", "", "", "🌙 DEF-9999 (NOTURNO)", "📦 Tinta Preta: 10 LATA"]
             ];
             processData(mockCSV);
             document.getElementById('debug-status').innerText = "MODO DEMO";
         }
-
         document.addEventListener("DOMContentLoaded", () => { atualizarDados(); });
     </script>
 </body>
