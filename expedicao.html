@@ -1,0 +1,261 @@
+<expedicao.html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Painel Expedição - GPS Mobile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { 
+            font-family: 'Chakra Petch', sans-serif; 
+            background-color: #000000; 
+            color: #e2e8f0; 
+            height: 100vh; 
+            width: 100vw;
+            overflow: hidden; 
+        }
+        
+        @media (max-width: 768px) {
+            body { overflow-y: auto; }
+            .mobile-scroll { min-height: 100vh; }
+        }
+
+        .fade-enter-active { animation: fadeIn 0.6s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        #progress-bar { transition: width linear; }
+        
+        /* Scrollbar customizada para a lista de materiais */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { bg: #1f2937; }
+        .custom-scroll::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 10px; }
+        
+        .material-item { border-bottom: 1px solid rgba(75, 85, 99, 0.4); }
+        .material-item:last-child { border-bottom: none; }
+    </style>
+</head>
+<body class="flex flex-col p-2 md:p-3 pb-2 mobile-scroll">
+
+    <header class="relative flex flex-col md:flex-row justify-between items-center mb-2 shrink-0 border-b border-gray-800 pb-2 gap-2 md:gap-0 transition-all duration-500">
+        
+        <div class="w-full md:w-1/3 flex flex-row md:flex-col justify-between md:justify-center items-center md:items-start order-2 md:order-1">
+            <p id="clock" class="text-4xl md:text-6xl font-mono text-white font-bold tracking-tighter leading-none">00:00</p>
+            <div class="flex items-center gap-3 mt-1 pl-1">
+                <div class="flex items-center gap-1.5 bg-gray-900/80 px-2 py-0.5 rounded">
+                    <span class="relative flex h-2 w-2 md:h-3 md:w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 md:h-3 md:w-3 bg-blue-500"></span></span>
+                    <p class="text-blue-500 text-[10px] md:text-xs font-bold tracking-widest">EXPEDIÇÃO</p>
+                </div>
+                <span id="header-date" class="text-sm md:text-lg text-gray-400 font-bold border-l-2 border-gray-700 pl-3">--/--</span>
+            </div>
+        </div>
+
+        <div class="w-full md:w-1/3 flex flex-col justify-center items-center order-1 md:order-2 mb-1 md:mb-0">
+            <div class="flex items-center gap-3">
+                <div id="header-icon" class="p-1.5 md:p-2 rounded-xl bg-gray-900 shadow-lg transition-colors duration-500">
+                    <i data-lucide="package-check" class="w-5 h-5 md:w-7 md:h-7"></i>
+                </div>
+                <h1 id="page-title" class="text-xl md:text-3xl font-bold text-white tracking-wide leading-none drop-shadow-md transition-colors duration-500 text-center">CARREGAMENTO</h1>
+            </div>
+            <span id="page-count" class="text-[10px] md:text-xs text-gray-500 font-bold tracking-widest uppercase bg-gray-900 px-3 py-0.5 rounded mt-1">...</span>
+        </div>
+
+        <div class="w-full md:w-1/3 flex justify-end items-center order-3">
+            <div id="weather-box-general" class="flex flex-col items-end hidden bg-gray-900/40 px-3 py-1.5 rounded-xl border border-gray-700/50 shadow-lg backdrop-blur-sm">
+                <span class="text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500 mb-0.5">BASE ARICANDUVA</span>
+                <div class="flex items-center gap-3">
+                    <i id="weather-icon-gen" data-lucide="cloud" class="w-6 h-6 md:w-10 md:h-10 text-blue-400"></i>
+                    <span id="weather-temp-gen" class="text-3xl md:text-5xl font-bold font-mono text-white leading-none">--°</span>
+                    <div class="h-6 w-px bg-gray-700"></div>
+                    <div class="flex flex-col leading-none" id="weather-minmax-container">
+                        <span id="weather-max-gen" class="text-xs md:text-base text-orange-400 font-mono font-bold">Max --°</span>
+                        <span id="weather-min-gen" class="text-xs md:text-base text-blue-300 font-mono font-bold">Min --°</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full relative min-h-0"> 
+        <div id="content-grid" class="grid grid-cols-1 landscape:grid-cols-2 md:grid-cols-2 md:grid-rows-3 gap-2 md:gap-3 w-full h-auto md:h-full pb-14 md:pb-0"></div>
+        
+        <div id="loading" class="absolute inset-0 flex items-center justify-center bg-black/95 z-50">
+            <div class="text-center">
+                <div class="w-12 h-12 md:w-24 md:h-24 border-t-4 border-b-4 border-blue-500 rounded-full animate-spin mx-auto mb-4 md:mb-6"></div>
+                <p class="text-lg md:text-3xl text-blue-400 animate-pulse font-bold tracking-widest">BUSCANDO CARGAS</p>
+                <p id="debug-status" class="text-gray-500 mt-2 text-xs md:text-sm font-mono">Conectando...</p>
+                <button onclick="loadMockData()" class="mt-6 px-4 py-2 bg-gray-800 text-[10px] md:text-xs text-gray-400 rounded hover:bg-gray-700 transition">Modo Demo</button>
+            </div>
+        </div>
+    </main>
+
+    <button onclick="manualPrev()" class="fixed top-1/2 left-0 -translate-y-1/2 z-50 p-2 md:p-3 rounded-r-xl transition-all duration-300 transform active:scale-95 text-white/70 bg-black/20 md:bg-transparent md:text-white/10 md:hover:text-white md:hover:bg-gray-800/90 backdrop-blur-sm md:backdrop-blur-none border border-white/10 md:border-transparent"><i data-lucide="chevron-left" class="w-8 h-8 md:w-10 md:h-10"></i></button>
+    <button onclick="manualNext()" class="fixed top-1/2 right-0 -translate-y-1/2 z-50 p-2 md:p-3 rounded-l-xl transition-all duration-300 transform active:scale-95 text-white/70 bg-black/20 md:bg-transparent md:text-white/10 md:hover:text-white md:hover:bg-gray-800/90 backdrop-blur-sm md:backdrop-blur-none border border-white/10 md:border-transparent"><i data-lucide="chevron-right" class="w-8 h-8 md:w-10 md:h-10"></i></button>
+    
+    <div class="fixed bottom-0 left-0 h-1 md:h-1.5 bg-gray-900 w-full z-40"><div id="progress-bar" class="h-full w-0"></div></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        const SLIDE_DURATION = 15; 
+        const MAX_ITEMS = 6;
+        const GOOGLE_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSrIAzEFpEZV1t2A5FDqY5OuJSc1LX7-4I0hFMUoL3iPoRTSr-JKeyIIhvCH5ZYzYWSLR9g35OUnnC/pub?output=csv";
+        const PROXY_URL = "https://corsproxy.io/?"; 
+
+        // --- SISTEMA DE CLIMA (MANTIDO DO ORIGINAL) ---
+        const cityCache = {}; const weatherCache = {}; const BASE_LAT = "-23.565"; const BASE_LON = "-46.520"; 
+        
+        function updateBaseWeather() {
+            fetchWeather(BASE_LAT, BASE_LON).then(data => {
+                if(!data) return;
+                document.getElementById('weather-temp-gen').innerText = Math.round(data.temp) + "°";
+                document.getElementById('weather-max-gen').innerText = `⬆${data.max}°`;
+                document.getElementById('weather-min-gen').innerText = `⬇${data.min}°`;
+                document.getElementById('weather-icon-gen').setAttribute('data-lucide', getWeatherIconName(data.code));
+                document.getElementById('weather-box-general').classList.remove('hidden');
+                lucide.createIcons();
+            });
+        }
+        function getWeatherIconName(code) {
+            if (code >= 0 && code <= 3) return 'cloud-sun';
+            if (code >= 45 && code <= 48) return 'cloud-fog';
+            if (code >= 51 && code <= 67) return 'cloud-rain';
+            if (code >= 71 && code <= 77) return 'snowflake';
+            if (code >= 80 && code <= 99) return 'cloud-lightning';
+            return 'sun';
+        }
+        async function fetchWeather(lat, lon) {
+            const cacheKey = `${lat},${lon}`; const now = Date.now();
+            if (weatherCache[cacheKey] && (now - weatherCache[cacheKey].timestamp < 600000)) return weatherCache[cacheKey].data;
+            try {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=America%2FSao_Paulo&forecast_days=1`;
+                const res = await fetch(url);
+                const json = await res.json();
+                const data = { temp: Math.round(json.current.temperature_2m), code: json.current.weather_code, min: Math.round(json.daily.temperature_2m_min[0]), max: Math.round(json.daily.temperature_2m_max[0]) };
+                weatherCache[cacheKey] = { timestamp: now, data: data };
+                return data;
+            } catch (e) { return null; }
+        }
+        
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+        }
+        setInterval(updateClock, 1000); updateClock(); updateBaseWeather(); setInterval(updateBaseWeather, 600000);
+
+        // --- LÓGICA DO SLIDE ---
+        let slides = []; let currentSlideIndex = 0;
+
+        function createCardHTML(data, themeColor) {
+            const borderClass = themeColor === 'DIURNO' ? 'border-yellow-500' : 'border-indigo-500';
+            const badgeClass = themeColor === 'DIURNO' ? 'bg-yellow-500 text-black' : 'bg-indigo-600 text-white';
+            
+            // Lógica para formatar a Lista de Carga
+            let contentHTML = "";
+            if (data.CARGA_LISTA && data.CARGA_LISTA.length > 5) {
+                // Transforma as quebras de linha em itens visuais
+                // Assume que o AppSheet manda separado por vírgula ou nova linha
+                const itens = data.CARGA_LISTA.split(/\r?\n|,/); 
+                contentHTML = `<ul class="w-full">`;
+                itens.forEach(item => {
+                    if(item.trim().length > 0) {
+                        contentHTML += `<li class="material-item py-1.5 flex items-start gap-2 text-sm md:text-base text-gray-300 leading-tight">
+                            ${item.trim()}
+                        </li>`;
+                    }
+                });
+                contentHTML += `</ul>`;
+            } else {
+                contentHTML = `<div class="h-full flex flex-col items-center justify-center text-gray-600 opacity-50">
+                    <i data-lucide="clipboard-x" class="w-8 h-8 md:w-12 md:h-12 mb-2"></i>
+                    <span class="text-xs md:text-sm font-bold uppercase tracking-widest">Aguardando Carga</span>
+                </div>`;
+            }
+
+            return `
+            <div class="bg-gray-900 border-l-[4px] md:border-l-[8px] ${borderClass} rounded-r-xl px-2 py-2 md:px-3 md:py-2 shadow-2xl flex flex-col h-full fade-enter-active relative overflow-hidden group transition-colors duration-500">
+                <div class="flex justify-between items-start z-10 shrink-0 mb-2 border-b border-gray-800 pb-2">
+                    <div class="w-full">
+                        <div class="flex justify-between items-center w-full">
+                            <span class="${badgeClass} text-sm md:text-lg font-bold px-2 py-0.5 rounded shadow inline-block tracking-wide truncate w-full text-center">
+                                ${data.ROTULO || data.PLACA_CAM || 'S/ PLACA'}
+                            </span>
+                        </div>
+                        <div class="mt-1 flex justify-between items-center px-1">
+                             <span class="text-xs text-gray-400 font-bold tracking-wider uppercase">${data.OBRA}</span>
+                             <span class="text-[10px] text-gray-600">${data.EQUIPE}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex-grow bg-slate-800/30 rounded-lg border border-gray-700/30 p-2 relative overflow-hidden">
+                    <div class="absolute inset-0 overflow-y-auto custom-scroll p-2">
+                        ${contentHTML}
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        // --- FUNÇÕES DE NAVEGAÇÃO (MANTIDAS) ---
+        function manualPrev() { if(window.slideInterval) clearInterval(window.slideInterval); prevSlide(); window.slideInterval = setInterval(nextSlide, SLIDE_DURATION * 1000); }
+        function manualNext() { if(window.slideInterval) clearInterval(window.slideInterval); nextSlide(); window.slideInterval = setInterval(nextSlide, SLIDE_DURATION * 1000); }
+        function prevSlide() {
+            if (slides.length > 1) { currentSlideIndex = (currentSlideIndex === 0) ? slides.length - 1 : currentSlideIndex - 1; renderSlide(); }
+            resetBar();
+        }
+        function nextSlide() {
+            if (slides.length > 0 && currentSlideIndex >= slides.length - 1) { atualizarDados(); }
+            if (slides.length > 1) { currentSlideIndex = (currentSlideIndex + 1) % slides.length; renderSlide(); } 
+            resetBar();
+        }
+        function resetBar() {
+            const bar = document.getElementById('progress-bar');
+            bar.style.transition = 'none'; bar.style.width = '0%';
+            setTimeout(() => { bar.style.transition = `width ${SLIDE_DURATION}s linear`; bar.style.width = '100%'; }, 50);
+        }
+
+        function renderSlide() {
+            if (slides.length === 0) return;
+            document.getElementById('loading').style.display = 'none';
+            const slide = slides[currentSlideIndex];
+            const title = document.getElementById('page-title');
+            
+            document.getElementById('header-date').innerText = slide.items.length > 0 ? slide.items[0].DATA : "--/--";
+            document.getElementById('page-count').innerText = `PÁGINA ${currentSlideIndex + 1} / ${slides.length}`;
+
+            if (slide.type === 'DIURNO') {
+                title.innerText = "EXPEDIÇÃO DIURNA";
+                title.className = "text-xl md:text-3xl font-bold text-yellow-500 tracking-wide drop-shadow-md leading-none text-center";
+                document.getElementById('header-icon').innerHTML = '<i data-lucide="sun" class="w-5 h-5 md:w-7 md:h-7 text-yellow-400"></i>';
+                document.getElementById('progress-bar').className = "h-full bg-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.6)]";
+            } else {
+                title.innerText = "EXPEDIÇÃO NOTURNA";
+                title.className = "text-xl md:text-3xl font-bold text-indigo-400 tracking-wide drop-shadow-md leading-none text-center";
+                document.getElementById('header-icon').innerHTML = '<i data-lucide="moon" class="w-5 h-5 md:w-7 md:h-7 text-indigo-400"></i>';
+                document.getElementById('progress-bar').className = "h-full bg-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.6)]";
+            }
+
+            document.getElementById('content-grid').innerHTML = slide.items.map(item => createCardHTML(item, slide.type)).join('');
+            lucide.createIcons();
+            resetBar();
+        }
+
+        // --- PROCESSAMENTO DE DADOS (IMPORTANTE: CHECK AS COLUNAS) ---
+        function processData(rows) {
+            let dayItems = []; let nightItems = [];
+            rows.forEach((row, index) => {
+                // SE AS COLUNAS ESTIVEREM ERRADAS, AJUSTE OS NÚMEROS ABAIXO:
+                // row[16] -> Espera-se a coluna 'Rotulo_Lista'
+                // row[17] -> Espera-se a coluna 'Lista_Carga_Painel'
+                
+                // Pegando índice do fim se tiver mais colunas
+                const lastIdx = row.length - 1;
+                
+                let d = { 
+                    ID: index, 
+                    DATA: row[0], 
+                    TURNO_RAW: row[1], 
+                    EQUIPE: row[2], 
+                    OBRA: row[4], 
+                    PLACA_CAM: row[7],
+                    
+                    // COLUNAS NOVAS (AJUSTE A
