@@ -14,20 +14,16 @@
             color: #e2e8f0; 
             height: 100vh; 
             width: 100vw;
-            overflow: hidden; /* Na TV trava o scroll */
+            overflow: hidden; 
         }
         
-        /* NO CELULAR: Libera o scroll e ajusta altura */
         @media (max-width: 768px) {
             body { 
                 overflow-y: auto; 
                 height: auto; 
                 min-height: 100vh;
             }
-            main {
-                height: auto !important; /* Importante para destravar altura no mobile */
-                min-height: 0;
-            }
+            main { height: auto !important; min-height: 0; }
         }
 
         .fade-enter-active { animation: fadeIn 0.6s ease-out; }
@@ -40,6 +36,7 @@
         
         .neon-text-yellow { text-shadow: 0 0 10px rgba(234, 179, 8, 0.5); }
         .neon-text-indigo { text-shadow: 0 0 10px rgba(99, 102, 241, 0.5); }
+        .neon-text-green { text-shadow: 0 0 15px rgba(34, 197, 94, 0.8); } /* Novo Neon Verde */
     </style>
 </head>
 <body class="flex flex-col p-2 md:p-3 pb-2 mobile-scroll">
@@ -97,13 +94,12 @@
 
     <button onclick="manualPrev()" class="fixed top-1/2 left-0 -translate-y-1/2 z-50 p-2 md:p-3 rounded-r-xl transition-all duration-300 transform active:scale-95 text-white/70 bg-black/50 md:bg-transparent md:text-white/10 md:hover:text-white md:hover:bg-gray-800/90 backdrop-blur-sm md:backdrop-blur-none border border-white/10 md:border-transparent"><i data-lucide="chevron-left" class="w-6 h-6 md:w-10 md:h-10"></i></button>
     <button onclick="manualNext()" class="fixed top-1/2 right-0 -translate-y-1/2 z-50 p-2 md:p-3 rounded-l-xl transition-all duration-300 transform active:scale-95 text-white/70 bg-black/50 md:bg-transparent md:text-white/10 md:hover:text-white md:hover:bg-gray-800/90 backdrop-blur-sm md:backdrop-blur-none border border-white/10 md:border-transparent"><i data-lucide="chevron-right" class="w-6 h-6 md:w-10 md:h-10"></i></button>
-    
     <div class="fixed bottom-0 left-0 h-1 md:h-1.5 bg-gray-900 w-full z-40"><div id="progress-bar" class="h-full w-0"></div></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script>
         const SLIDE_DURATION = 15; 
-        const MAX_ITEMS = 4; // 4 Itens por página (No mobile você rola pra ver os 4)
+        const MAX_ITEMS = 4;
         const GOOGLE_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSrIAzEFpEZV1t2A5FDqY5OuJSc1LX7-4I0hFMUoL3iPoRTSr-JKeyIIhvCH5ZYzYWSLR9g35OUnnC/pub?output=csv";
         
         const cityCache = {}; const weatherCache = {}; const BASE_LAT = "-23.565"; const BASE_LON = "-46.520"; 
@@ -116,9 +112,21 @@
         let slides = []; let currentSlideIndex = 0;
 
         function createCardHTML(data, themeColor) {
-            const borderClass = themeColor === 'DIURNO' ? 'border-yellow-500' : 'border-indigo-500';
+            // VERIFICA STATUS DA CARGA (COLUNA V - Indice 21)
+            const isLoaded = data.STATUS_CARGA && data.STATUS_CARGA.toUpperCase().includes("CARREGADO");
+
+            // SE ESTIVER CARREGADO: Borda Verde e Brilho Verde
+            // SE NAO: Borda Amarela/Roxa normal
+            let borderClass = isLoaded ? 'border-green-500 shadow-[0_0_30px_rgba(34,197,94,0.3)]' : (themeColor === 'DIURNO' ? 'border-yellow-500' : 'border-indigo-500');
             const textNeonClass = themeColor === 'DIURNO' ? 'text-yellow-400 neon-text-yellow' : 'text-indigo-300 neon-text-indigo';
             
+            // SE ESTIVER CARREGADO: Coloca ícone de Check
+            const statusIcon = isLoaded 
+                ? `<div class="absolute right-0 top-0 bg-green-600 text-white px-3 py-1 rounded-bl-xl font-bold tracking-widest text-xs md:text-sm shadow-lg z-20 flex items-center gap-2">
+                     <i data-lucide="check-circle-2" class="w-4 h-4 md:w-5 md:h-5"></i> CARREGADO
+                   </div>` 
+                : '';
+
             let tituloLimpo = data.ROTULO.replace(/\(.*\)/, '').trim();
 
             let contentHTML = "";
@@ -127,8 +135,6 @@
                 contentHTML = `<ul class="w-full columns-1 md:columns-2 gap-3 md:gap-5 space-y-2 md:space-y-3">`; 
                 itens.forEach(item => {
                     if(item.trim().length > 0) {
-                        // RESPONSIVIDADE: 
-                        // Mobile: text-base (16px) | TV: text-3xl (30px)
                         contentHTML += `<li class="break-inside-avoid bg-black/20 rounded px-3 py-2 text-base md:text-3xl font-semibold text-gray-200 border-l-[4px] md:border-l-[8px] ${themeColor === 'DIURNO' ? 'border-yellow-500/50' : 'border-indigo-500/50'} leading-snug shadow-sm">
                             ${item.trim()}
                         </li>`;
@@ -143,7 +149,8 @@
             }
 
             return `
-            <div class="bg-gray-900 border-l-[6px] md:border-l-[16px] ${borderClass} rounded-r-xl md:rounded-r-2xl px-3 py-3 md:px-6 md:py-4 shadow-2xl flex flex-col h-auto md:h-full fade-enter-active relative overflow-hidden group transition-colors duration-500 min-h-[250px] md:min-h-0">
+            <div class="bg-gray-900 border-l-[6px] md:border-l-[16px] ${borderClass} rounded-r-xl md:rounded-r-2xl px-3 py-3 md:px-6 md:py-4 shadow-2xl flex flex-col h-auto md:h-full fade-enter-active relative overflow-hidden group transition-all duration-500 min-h-[250px] md:min-h-0">
+                ${statusIcon}
                 
                 <div class="flex justify-between items-center z-10 shrink-0 mb-2 md:mb-3 border-b border-gray-800 pb-2 md:pb-3 md:h-[15%]">
                     <div class="flex items-center gap-2 md:gap-3 w-2/3">
@@ -164,14 +171,17 @@
                     </div>
                 </div>
 
-                <div class="mt-2 md:mt-3 pt-2 border-t border-gray-800 z-10 shrink-0 md:h-[10%] flex items-center">
-                     <span class="text-xs md:text-xl text-gray-400 font-bold uppercase tracking-wider truncate w-full text-left">
+                <div class="mt-2 md:mt-3 pt-2 border-t border-gray-800 z-10 shrink-0 md:h-[10%] flex items-center justify-between">
+                     <span class="text-xs md:text-xl text-gray-400 font-bold uppercase tracking-wider truncate text-left flex items-center">
                         <i data-lucide="hard-hat" class="inline w-4 h-4 md:w-6 md:h-6 mr-1 md:mr-2 mb-1"></i> ${data.OBRA}
                      </span>
+                     
+                     ${isLoaded && data.QUEM ? `<span class="text-[8px] md:text-xs text-green-400/70 font-mono text-right ml-2"><i data-lucide="user-check" class="inline w-3 h-3"></i> ${data.QUEM.split('@')[0]}</span>` : ''}
                 </div>
             </div>`;
         }
 
+        // --- NAVEGAÇÃO ---
         function manualPrev() { if(window.slideInterval) clearInterval(window.slideInterval); prevSlide(); window.slideInterval = setInterval(nextSlide, SLIDE_DURATION * 1000); }
         function manualNext() { if(window.slideInterval) clearInterval(window.slideInterval); nextSlide(); window.slideInterval = setInterval(nextSlide, SLIDE_DURATION * 1000); }
         function prevSlide() { if (slides.length > 1) { currentSlideIndex = (currentSlideIndex === 0) ? slides.length - 1 : currentSlideIndex - 1; renderSlide(); } resetBar(); }
@@ -186,18 +196,13 @@
             document.getElementById('header-date').innerText = slide.items.length > 0 ? slide.items[0].DATA : "--/--";
             document.getElementById('page-count').innerText = `PÁGINA ${currentSlideIndex + 1} / ${slides.length}`;
 
-            // Ajuste do título para Mobile
             if (slide.type === 'DIURNO') {
-                title.innerText = "DIURNO"; // Texto curto no mobile
-                if(window.innerWidth > 768) title.innerText = "EXPEDIÇÃO DIURNA"; // Texto longo na TV
-
+                title.innerText = window.innerWidth > 768 ? "EXPEDIÇÃO DIURNA" : "DIURNO";
                 title.className = "text-xl md:text-3xl font-bold text-yellow-500 tracking-wide drop-shadow-md leading-none text-center";
                 document.getElementById('header-icon').innerHTML = '<i data-lucide="sun" class="w-5 h-5 md:w-7 md:h-7 text-yellow-400"></i>';
                 document.getElementById('progress-bar').className = "h-full bg-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.6)]";
             } else {
-                title.innerText = "NOTURNO";
-                if(window.innerWidth > 768) title.innerText = "EXPEDIÇÃO NOTURNA";
-
+                title.innerText = window.innerWidth > 768 ? "EXPEDIÇÃO NOTURNA" : "NOTURNO";
                 title.className = "text-xl md:text-3xl font-bold text-indigo-400 tracking-wide drop-shadow-md leading-none text-center";
                 document.getElementById('header-icon').innerHTML = '<i data-lucide="moon" class="w-5 h-5 md:w-7 md:h-7 text-indigo-400"></i>';
                 document.getElementById('progress-bar').className = "h-full bg-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.6)]";
@@ -206,14 +211,14 @@
             document.getElementById('content-grid').innerHTML = slide.items.map(item => createCardHTML(item, slide.type)).join('');
             lucide.createIcons();
             resetBar();
-            
-            // Força scroll pro topo no mobile ao trocar de slide
             window.scrollTo(0,0);
         }
 
         function processData(rows) {
             let dayItems = []; let nightItems = [];
             rows.forEach((row, index) => {
+                // ATUALIZADO: COLUNAS NOVAS
+                // T=19, U=20, V=21 (STATUS), W=22 (QUEM)
                 let d = { 
                     ID: index, 
                     DATA: row[0], 
@@ -222,7 +227,9 @@
                     OBRA: row[4], 
                     PLACA_CAM: row[7],
                     ROTULO: row[19] || "☀️ " + row[7], 
-                    CARGA_LISTA: row[20] || ""        
+                    CARGA_LISTA: row[20] || "",
+                    STATUS_CARGA: row[21] || "",  // LÊ COLUNA V
+                    QUEM: row[22] || ""           // LÊ COLUNA W
                 };
                 if (!d.EQUIPE || d.EQUIPE === "EQUIPE" || d.EQUIPE === "") return; 
                 const turnoCol = (d.TURNO_RAW || "").toUpperCase();
@@ -255,8 +262,9 @@
 
         function loadMockData() {
             const mockCSV = [
-                ["20/01/2026", "TURNO-D", "EQUIPE EXEMPLO", "", "OBRA TESTE", "", "", "ABC-1234", "", "", "", "", "", "", "", "", "", "", "", "☀️ ABC-1234 (DIURNO)", "📦 Tinta: 20 LATA\n📦 Cones: 50 UN\n📦 Item 3\n📦 Item 4\n📦 Item 5"],
-                ["20/01/2026", "TURNO-N", "EQUIPE BETA", "", "MANUTENÇÃO", "", "", "DEF-9999", "", "", "", "", "", "", "", "", "", "", "", "🌙 DEF-9999 (NOTURNO)", "📦 Tinta Preta: 10 LATA"]
+                // MOCK COM EXEMPLO DE CARREGADO
+                ["20/01/2026", "TURNO-D", "EQUIPE EXEMPLO", "", "OBRA TESTE", "", "", "ABC-1234", "", "", "", "", "", "", "", "", "", "", "", "☀️ ABC-1234 (DIURNO)", "📦 Tinta: 20 LATA\n📦 Cones: 50 UN", "CARREGADO", "joao@gmail.com"],
+                ["20/01/2026", "TURNO-N", "EQUIPE BETA", "", "MANUTENÇÃO", "", "", "DEF-9999", "", "", "", "", "", "", "", "", "", "", "", "🌙 DEF-9999 (NOTURNO)", "📦 Tinta Preta: 10 LATA", "", ""]
             ];
             processData(mockCSV);
             document.getElementById('debug-status').innerText = "MODO DEMO";
