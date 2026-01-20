@@ -31,7 +31,7 @@
         .custom-scroll::-webkit-scrollbar-track { background: #1f2937; }
         .custom-scroll::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 10px; }
         
-        /* Neon Effects */
+        /* Efeitos Neon */
         .neon-text-yellow { text-shadow: 0 0 10px rgba(234, 179, 8, 0.5); }
         .neon-text-indigo { text-shadow: 0 0 10px rgba(99, 102, 241, 0.5); }
     </style>
@@ -77,7 +77,7 @@
     </header>
 
     <main class="flex-grow w-full relative min-h-0"> 
-        <div id="content-grid" class="grid grid-cols-1 landscape:grid-cols-2 md:grid-cols-2 md:grid-rows-3 gap-2 md:gap-3 w-full h-auto md:h-full pb-14 md:pb-0"></div>
+        <div id="content-grid" class="grid grid-cols-1 landscape:grid-cols-2 md:grid-cols-2 md:grid-rows-2 gap-2 md:gap-3 w-full h-auto md:h-full pb-14 md:pb-0"></div>
         
         <div id="loading" class="absolute inset-0 flex items-center justify-center bg-black/95 z-50">
             <div class="text-center">
@@ -97,7 +97,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script>
         const SLIDE_DURATION = 15; 
-        const MAX_ITEMS = 6;
+        const MAX_ITEMS = 4; // MUDANÇA: Agora são 4 itens por página
         const GOOGLE_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSrIAzEFpEZV1t2A5FDqY5OuJSc1LX7-4I0hFMUoL3iPoRTSr-JKeyIIhvCH5ZYzYWSLR9g35OUnnC/pub?output=csv";
         
         // --- CLIMA (MANTIDO) ---
@@ -115,19 +115,17 @@
             const borderClass = themeColor === 'DIURNO' ? 'border-yellow-500' : 'border-indigo-500';
             const textNeonClass = themeColor === 'DIURNO' ? 'text-yellow-400 neon-text-yellow' : 'text-indigo-300 neon-text-indigo';
             
-            // 1. LIMPEZA DO TÍTULO (Remove o texto entre parenteses para ficar só PLACA + ÍCONE)
-            // Ex: "☀️ ABC-1234 (DIURNO)" vira "☀️ ABC-1234"
+            // 1. Limpeza da Placa
             let tituloLimpo = data.ROTULO.replace(/\(.*\)/, '').trim();
 
-            // 2. LÓGICA DA LISTA INTELIGENTE (COLUNAS)
+            // 2. Lista Inteligente
             let contentHTML = "";
             if (data.CARGA_LISTA && data.CARGA_LISTA.length > 5) {
                 const itens = data.CARGA_LISTA.split(/\r?\n|,/); 
-                // 'columns-1 md:columns-2' faz a lista se dividir se for grande
                 contentHTML = `<ul class="w-full columns-1 md:columns-2 gap-3 space-y-1">`;
                 itens.forEach(item => {
                     if(item.trim().length > 0) {
-                        contentHTML += `<li class="break-inside-avoid bg-black/20 rounded px-2 py-1.5 text-sm md:text-lg text-gray-200 border-l-2 ${themeColor === 'DIURNO' ? 'border-yellow-500/50' : 'border-indigo-500/50'} leading-tight">
+                        contentHTML += `<li class="break-inside-avoid bg-black/20 rounded px-3 py-2 text-sm md:text-xl text-gray-200 border-l-4 ${themeColor === 'DIURNO' ? 'border-yellow-500/50' : 'border-indigo-500/50'} leading-snug">
                             ${item.trim()}
                         </li>`;
                     }
@@ -135,38 +133,42 @@
                 contentHTML += `</ul>`;
             } else {
                 contentHTML = `<div class="h-full flex flex-col items-center justify-center text-gray-600 opacity-50">
-                    <i data-lucide="clipboard-x" class="w-10 h-10 md:w-16 md:h-16 mb-2"></i>
-                    <span class="text-xs md:text-sm font-bold uppercase tracking-widest">Aguardando Carga</span>
+                    <i data-lucide="clipboard-x" class="w-12 h-12 md:w-20 md:h-20 mb-3"></i>
+                    <span class="text-sm md:text-lg font-bold uppercase tracking-widest">Aguardando Carga</span>
                 </div>`;
             }
 
             return `
-            <div class="bg-gray-900 border-l-[6px] md:border-l-[10px] ${borderClass} rounded-r-xl px-2 py-2 md:px-4 md:py-3 shadow-2xl flex flex-col h-full fade-enter-active relative overflow-hidden group transition-colors duration-500">
+            <div class="bg-gray-900 border-l-[8px] md:border-l-[12px] ${borderClass} rounded-r-xl px-3 py-3 md:px-5 md:py-4 shadow-2xl flex flex-col h-full fade-enter-active relative overflow-hidden group transition-colors duration-500">
                 
-                <div class="flex justify-between items-center z-10 shrink-0 mb-2 border-b border-gray-800 pb-2">
-                    <span class="text-3xl md:text-5xl font-bold text-white tracking-wider truncate drop-shadow-md">
-                        ${tituloLimpo}
-                    </span>
+                <div class="flex justify-between items-center z-10 shrink-0 mb-3 border-b border-gray-800 pb-3">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl md:text-6xl font-bold text-white tracking-wider truncate drop-shadow-md">
+                            ${tituloLimpo}
+                        </span>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <span class="text-xl md:text-3xl font-bold ${textNeonClass} tracking-wide truncate">
+                            ${data.EQUIPE}
+                        </span>
+                    </div>
                 </div>
                 
-                <div class="flex-grow bg-slate-800/30 rounded-lg border border-gray-700/30 p-2 relative overflow-hidden">
-                    <div class="absolute inset-0 overflow-y-auto custom-scroll p-2">
+                <div class="flex-grow bg-slate-800/30 rounded-lg border border-gray-700/30 p-3 relative overflow-hidden">
+                    <div class="absolute inset-0 overflow-y-auto custom-scroll p-3">
                         ${contentHTML}
                     </div>
                 </div>
 
-                <div class="mt-2 pt-2 border-t border-gray-800 z-10 shrink-0 flex flex-col">
-                     <span class="text-xl md:text-3xl font-bold ${textNeonClass} tracking-wide truncate">
-                        ${data.EQUIPE}
-                     </span>
-                     <span class="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider truncate">
+                <div class="mt-3 pt-2 border-t border-gray-800 z-10 shrink-0">
+                     <span class="text-sm md:text-lg text-gray-500 font-bold uppercase tracking-wider truncate block text-center md:text-left">
                         ${data.OBRA}
                      </span>
                 </div>
             </div>`;
         }
 
-        // --- NAVEGAÇÃO (MANTIDA) ---
+        // --- NAVEGAÇÃO ---
         function manualPrev() { if(window.slideInterval) clearInterval(window.slideInterval); prevSlide(); window.slideInterval = setInterval(nextSlide, SLIDE_DURATION * 1000); }
         function manualNext() { if(window.slideInterval) clearInterval(window.slideInterval); nextSlide(); window.slideInterval = setInterval(nextSlide, SLIDE_DURATION * 1000); }
         function prevSlide() { if (slides.length > 1) { currentSlideIndex = (currentSlideIndex === 0) ? slides.length - 1 : currentSlideIndex - 1; renderSlide(); } resetBar(); }
@@ -201,7 +203,7 @@
         function processData(rows) {
             let dayItems = []; let nightItems = [];
             rows.forEach((row, index) => {
-                // INDICES DAS COLUNAS (T=19, U=20)
+                // T=19, U=20
                 let d = { 
                     ID: index, 
                     DATA: row[0], 
@@ -209,8 +211,8 @@
                     EQUIPE: row[2], 
                     OBRA: row[4], 
                     PLACA_CAM: row[7],
-                    ROTULO: row[19] || "☀️ " + row[7], // Tenta coluna T, se falhar improvisa
-                    CARGA_LISTA: row[20] || ""        // Tenta coluna U
+                    ROTULO: row[19] || "☀️ " + row[7], 
+                    CARGA_LISTA: row[20] || ""        
                 };
 
                 if (!d.EQUIPE || d.EQUIPE === "EQUIPE" || d.EQUIPE === "") return; 
