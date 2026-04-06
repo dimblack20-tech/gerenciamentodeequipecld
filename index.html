@@ -225,6 +225,29 @@
             return { color: "bg-gray-700 text-gray-300 border border-gray-600", icon: "activity", label: text };
         }
 
+        // ==========================================
+        // NOVA FUNÇÃO: VERIFICA RODÍZIO DE SP
+        // ==========================================
+        function isRodizio(dataStr, placa) {
+            if (!placa || placa === "---" || placa.length < 1) return false;
+            if (!dataStr || typeof dataStr !== 'string' || !dataStr.includes('/')) return false;
+            
+            const parts = dataStr.split('/');
+            if (parts.length !== 3) return false;
+            
+            const d = new Date(parts[2], parts[1] - 1, parts[0]);
+            const diaSemana = d.getDay(); // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sáb
+            const finalPlaca = placa.trim().slice(-1);
+
+            if (diaSemana === 1 && ["1", "2"].includes(finalPlaca)) return true;
+            if (diaSemana === 2 && ["3", "4"].includes(finalPlaca)) return true;
+            if (diaSemana === 3 && ["5", "6"].includes(finalPlaca)) return true;
+            if (diaSemana === 4 && ["7", "8"].includes(finalPlaca)) return true;
+            if (diaSemana === 5 && ["9", "0"].includes(finalPlaca)) return true;
+
+            return false;
+        }
+
         function createCardHTML(data, themeColor) {
             const borderClass = themeColor === 'DIURNO' ? 'border-yellow-500' : 'border-indigo-500';
             
@@ -243,6 +266,15 @@
             
             const btnApoio = data.LINK_APOIO && data.LINK_APOIO.length > 5 
                 ? `<a href="${data.LINK_APOIO}" target="_blank" class="md:hidden ml-auto bg-green-600/80 p-1 rounded hover:bg-green-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-3 h-3 text-white"></i></a>` 
+                : '';
+
+            // ALERTA DE RODÍZIO
+            const camRodizio = isRodizio(data.DATA, data.PLACA_CAM) 
+                ? `<span class="bg-yellow-500 text-black text-[8px] md:text-[9px] font-bold px-1 py-0.5 rounded ml-1 animate-pulse">⚠️ RODÍZIO</span>` 
+                : '';
+            
+            const apoioRodizio = isRodizio(data.DATA, data.PLACA_APOIO) 
+                ? `<span class="bg-yellow-500 text-black text-[8px] md:text-[9px] font-bold px-1 py-0.5 rounded ml-1 animate-pulse">⚠️ RODÍZIO</span>` 
                 : '';
 
             return `
@@ -269,6 +301,7 @@
                     <div class="bg-slate-800/50 p-1.5 rounded-lg border border-blue-900/50 relative">
                         <div class="flex items-center gap-1.5 mb-0.5 text-blue-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-blue">
                             <i data-lucide="truck" class="w-3 h-3 md:w-4 md:h-4"></i> Caminhão
+                            ${camRodizio}
                             ${btnCam} </div>
                         <div class="text-lg md:text-2xl text-white font-mono font-bold leading-none tracking-wide truncate">${data.PLACA_CAM}</div>
                         <div class="text-blue-300 text-[10px] md:text-xs mt-0.5 font-semibold truncate">${data.CAMINHAO}</div>
@@ -276,6 +309,7 @@
                     <div class="bg-slate-800/50 p-1.5 rounded-lg border border-green-900/50 relative">
                         <div class="flex items-center gap-1.5 mb-0.5 text-green-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-green">
                             <i data-lucide="car" class="w-3 h-3 md:w-4 md:h-4"></i> Apoio
+                            ${apoioRodizio}
                             ${btnApoio} </div>
                         <div class="text-lg md:text-2xl text-white font-mono font-bold leading-none tracking-wide truncate">${data.PLACA_APOIO}</div>
                         <div class="text-green-300 text-[10px] md:text-xs mt-0.5 font-semibold truncate">${data.APOIO}</div>
