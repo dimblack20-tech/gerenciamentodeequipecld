@@ -1,3 +1,4 @@
+<index.html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -15,7 +16,7 @@
             overflow-x: hidden;
         }
         
-        /* TELA DE TV / PC: Altura travada, sem barra de rolagem */
+        /* TELA DE TV / PC */
         @media (min-width: 769px) {
             body { 
                 height: 100vh; 
@@ -23,7 +24,7 @@
             }
         }
         
-        /* CELULAR: Libera a rolagem e a altura para não esmagar os cards */
+        /* CELULAR */
         @media (max-width: 768px) {
             body { 
                 min-height: 100vh; 
@@ -68,16 +69,14 @@
         </div>
 
         <div class="w-full md:w-1/3 flex justify-end items-center order-3">
-            <div id="weather-box-general" class="flex flex-col items-end hidden bg-gray-900/40 px-3 py-1.5 rounded-xl border border-gray-700/50 shadow-lg backdrop-blur-sm">
-                <span class="text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500 mb-0.5">BASE ARICANDUVA</span>
+            <div id="weather-box-general" class="flex flex-col items-end hidden bg-black/60 px-3 py-1.5 rounded-xl border border-gray-700/50 shadow-lg backdrop-blur-sm">
+                <span class="text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-bold text-gray-400 mb-0.5">BASE ARICANDUVA</span>
                 <div class="flex items-center gap-3">
-                    <i id="weather-icon-gen" data-lucide="cloud" class="w-6 h-6 md:w-10 md:h-10 text-blue-400"></i>
+                    <i id="weather-icon-gen" data-lucide="cloud" class="w-6 h-6 md:w-10 md:h-10 text-yellow-400"></i>
                     <span id="weather-temp-gen" class="text-3xl md:text-5xl font-bold font-mono text-white leading-none">--°</span>
-                    <div class="h-6 w-px bg-gray-700"></div>
+                    <div class="h-8 w-px bg-gray-700 mx-1"></div>
                     <div class="flex flex-col leading-none" id="weather-minmax-container">
-                        <span id="weather-max-gen" class="text-xs md:text-base text-orange-400 font-mono font-bold">Max --°</span>
-                        <span id="weather-min-gen" class="text-xs md:text-base text-blue-300 font-mono font-bold">Min --°</span>
-                    </div>
+                        </div>
                 </div>
             </div>
         </div>
@@ -117,14 +116,42 @@
         const cityCache = {}; 
         const weatherCache = {}; 
 
+        // TRADUTOR DE CLIMA (WMO CODES)
+        function getWeatherText(code) {
+            if (code === 0) return 'Céu limpo';
+            if (code === 1) return 'Quase limpo';
+            if (code === 2) return 'Parcialmente Nublado';
+            if (code === 3) return 'Nublado';
+            if (code >= 45 && code <= 48) return 'Nevoeiro';
+            if (code >= 51 && code <= 55) return 'Garoa';
+            if (code >= 56 && code <= 57) return 'Garoa gelada';
+            if (code >= 61 && code <= 65) return 'Chuva';
+            if (code >= 66 && code <= 67) return 'Chuva congelante';
+            if (code >= 71 && code <= 77) return 'Neve';
+            if (code >= 80 && code <= 82) return 'Pancadas de Chuva';
+            if (code >= 95 && code <= 99) return 'Tempestades Esparsas';
+            return 'Indefinido';
+        }
+
         function updateBaseWeather() {
             fetchWeather(BASE_LAT, BASE_LON).then(data => {
                 if(!data) return;
                 document.getElementById('weather-temp-gen').innerText = Math.round(data.temp) + "°";
-                document.getElementById('weather-max-gen').innerText = `⬆${data.max}°`;
-                document.getElementById('weather-min-gen').innerText = `⬇${data.min}°`;
                 const iconElement = document.getElementById('weather-icon-gen');
                 iconElement.setAttribute('data-lucide', getWeatherIconName(data.code));
+                
+                // NOVO LAYOUT DO CABEÇALHO COM CHUVA E VENTO
+                const container = document.getElementById('weather-minmax-container');
+                container.innerHTML = `
+                    <span class="text-[10px] md:text-sm text-gray-200 font-bold mb-1">${getWeatherText(data.code)}</span>
+                    <div class="flex gap-2 text-[9px] md:text-xs text-gray-400 mt-0.5">
+                        <span class="text-orange-400 font-bold">⬆${data.max}°</span>
+                        <span class="text-blue-300 font-bold">⬇${data.min}°</span>
+                        <span class="flex items-center gap-0.5 ml-1" title="Chuva"><i data-lucide="droplet" class="w-3 h-3 text-blue-400"></i> ${data.rain}%</span>
+                        <span class="flex items-center gap-0.5" title="Vento"><i data-lucide="wind" class="w-3 h-3 text-gray-400"></i> ${data.wind} km/h</span>
+                    </div>
+                `;
+                
                 document.getElementById('weather-box-general').classList.remove('hidden');
                 lucide.createIcons();
             });
@@ -144,13 +171,17 @@
             const now = Date.now();
             if (weatherCache[cacheKey] && (now - weatherCache[cacheKey].timestamp < 600000)) return weatherCache[cacheKey].data;
             try {
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=America%2FSao_Paulo&forecast_days=1`;
+                // URL ATUALIZADA PARA BUSCAR UMIDADE, VENTO E PROBABILIDADE DE CHUVA
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=America%2FSao_Paulo&forecast_days=1`;
                 const res = await fetch(url);
                 if(!res.ok) throw new Error("Erro API");
                 const json = await res.json();
                 const data = { 
                     temp: Math.round(json.current.temperature_2m), 
                     code: json.current.weather_code, 
+                    humidity: json.current.relative_humidity_2m,
+                    wind: Math.round(json.current.wind_speed_10m),
+                    rain: json.daily.precipitation_probability_max[0] || 0,
                     min: Math.round(json.daily.temperature_2m_min[0]),
                     max: Math.round(json.daily.temperature_2m_max[0])
                 };
@@ -191,23 +222,31 @@
                 if(!el) continue;
                 if (!item.REGIAO || item.REGIAO.trim() === "" || item.REGIAO === "---") { el.innerHTML = ""; continue; }
                 
-                el.innerHTML = `<span class="text-[10px] text-gray-500 animate-pulse">🔎 ${item.REGIAO.substring(0,10)}...</span>`;
+                el.innerHTML = `<span class="text-[10px] text-gray-500 animate-pulse mt-1">🔎 Buscando Clima...</span>`;
                 await new Promise(r => setTimeout(r, 150)); 
 
                 const coords = await resolveCity(item.REGIAO);
                 if (coords) {
                     const w = await fetchWeather(coords.lat, coords.lon);
                     if (w) {
+                        // NOVO LAYOUT DO CLIMA NOS CARDS (ESTILO CLIMA TEMPO)
                         el.innerHTML = `
-                            <div class="flex items-center gap-1.5 bg-black/60 px-2 py-1 rounded border border-gray-700/50 shadow-lg">
-                                <div class="flex items-center gap-1">
-                                    <i data-lucide="${getWeatherIconName(w.code)}" class="w-4 h-4 md:w-6 md:h-6 text-yellow-400"></i>
-                                    <span class="text-sm md:text-2xl font-bold text-white leading-none">${w.temp}°</span>
+                            <div class="flex flex-col bg-black/80 px-2.5 py-1.5 rounded-lg border border-gray-700/50 shadow-lg min-w-[110px] md:min-w-[130px] shrink-0">
+                                <div class="flex justify-between items-center gap-3">
+                                    <div class="flex items-center gap-1.5">
+                                        <i data-lucide="${getWeatherIconName(w.code)}" class="w-5 h-5 md:w-7 md:h-7 text-yellow-400 drop-shadow-md"></i>
+                                        <span class="text-sm md:text-xl font-bold text-white leading-none">${w.temp}°</span>
+                                    </div>
+                                    <div class="flex flex-col items-end leading-none">
+                                        <span class="text-[8px] md:text-[9px] text-orange-400 font-mono font-bold mb-0.5">⬆${w.max}°</span>
+                                        <span class="text-[8px] md:text-[9px] text-blue-300 font-mono font-bold">⬇${w.min}°</span>
+                                    </div>
                                 </div>
-                                <div class="w-px h-4 bg-gray-600 mx-1"></div>
-                                <div class="flex flex-col leading-none">
-                                    <span class="text-[8px] md:text-[10px] text-orange-400 font-mono font-bold mb-0.5">⬆${w.max}°</span>
-                                    <span class="text-[8px] md:text-[10px] text-blue-300 font-mono font-bold">⬇${w.min}°</span>
+                                <div class="text-[9px] md:text-[10px] text-gray-300 font-semibold mt-1.5 mb-1.5 truncate tracking-wide">${getWeatherText(w.code)}</div>
+                                <div class="flex justify-between items-center pt-1.5 border-t border-gray-700/80 text-[8px] md:text-[9px] text-gray-400 gap-1.5">
+                                    <span class="flex items-center gap-0.5" title="Chuva"><i data-lucide="droplet" class="w-2.5 h-2.5 text-blue-400"></i>${w.rain}%</span>
+                                    <span class="flex items-center gap-0.5" title="Umidade"><i data-lucide="droplets" class="w-2.5 h-2.5 text-teal-400"></i>${w.humidity}%</span>
+                                    <span class="flex items-center gap-0.5" title="Vento"><i data-lucide="wind" class="w-2.5 h-2.5 text-gray-400"></i>${w.wind}k</span>
                                 </div>
                             </div>`;
                         lucide.createIcons();
@@ -232,295 +271,4 @@
             if (!sin) return { color: "bg-gray-800 text-gray-400 border border-gray-700", icon: "hash", label: "PADRÃO" };
             const text = sin.toUpperCase();
             if (text.includes("VERTICAL")) return { color: "bg-orange-600 text-white border border-orange-400 shadow-lg", icon: "signpost", label: "VERTICAL" };
-            if (text.includes("HORIZONTAL")) return { color: "bg-cyan-600 text-white border border-cyan-400 shadow-lg", icon: "minus", label: "HORIZ." };
-            return { color: "bg-gray-700 text-gray-300 border border-gray-600", icon: "activity", label: text };
-        }
-
-        // ==========================================
-        // FUNÇÃO: VERIFICA RODÍZIO DE SP
-        // ==========================================
-        function isRodizio(dataStr, placa) {
-            if (!placa || placa === "---" || placa.length < 1) return false;
-            if (!dataStr || typeof dataStr !== 'string' || !dataStr.includes('/')) return false;
-            
-            const parts = dataStr.split('/');
-            if (parts.length !== 3) return false;
-            
-            const d = new Date(parts[2], parts[1] - 1, parts[0]);
-            const diaSemana = d.getDay(); 
-            const finalPlaca = placa.trim().slice(-1);
-
-            if (diaSemana === 1 && ["1", "2"].includes(finalPlaca)) return true;
-            if (diaSemana === 2 && ["3", "4"].includes(finalPlaca)) return true;
-            if (diaSemana === 3 && ["5", "6"].includes(finalPlaca)) return true;
-            if (diaSemana === 4 && ["7", "8"].includes(finalPlaca)) return true;
-            if (diaSemana === 5 && ["9", "0"].includes(finalPlaca)) return true;
-
-            return false;
-        }
-
-        function createCardHTML(data, themeColor) {
-            const borderClass = themeColor === 'DIURNO' ? 'border-yellow-500' : 'border-indigo-500';
-            
-            const badgeClass = themeColor === 'DIURNO' 
-                ? 'bg-yellow-500 text-black' 
-                : 'bg-indigo-600 text-white';
-
-            const isViagem = data.VIAGEM && data.VIAGEM.toUpperCase().includes("X");
-            const cardBackground = isViagem ? "bg-[#1f1717] border-r-4 border-r-rose-900/50" : "bg-gray-900";
-            const sinStyle = getSignStyle(data.SINALIZACAO);
-            const uniqueId = `weather-${data.ID}`;
-
-            const btnCam = data.LINK_CAM && data.LINK_CAM.length > 5 
-                ? `<a href="${data.LINK_CAM}" target="_blank" class="md:hidden ml-auto bg-blue-600/80 p-1.5 rounded hover:bg-blue-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></a>` 
-                : '';
-            
-            const btnApoio = data.LINK_APOIO && data.LINK_APOIO.length > 5 
-                ? `<a href="${data.LINK_APOIO}" target="_blank" class="md:hidden ml-auto bg-green-600/80 p-1.5 rounded hover:bg-green-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></a>` 
-                : '';
-
-            // ALERTA DE RODÍZIO (ESTILO VERMELHO E BRANCO)
-            const camRodizio = isRodizio(data.DATA, data.PLACA_CAM) 
-                ? `<span class="bg-red-600 text-white text-[8px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">⚠️ RODÍZIO</span>` 
-                : '';
-            
-            const apoioRodizio = isRodizio(data.DATA, data.PLACA_APOIO) 
-                ? `<span class="bg-red-600 text-white text-[8px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">⚠️ RODÍZIO</span>` 
-                : '';
-
-            // Adicionado min-h maior e h-auto para não esmagar no celular
-            return `
-            <div class="${cardBackground} border-l-[4px] md:border-l-[8px] ${borderClass} rounded-r-xl px-2 py-3 md:px-3 md:py-2 shadow-2xl flex flex-col justify-between min-h-[170px] h-auto md:h-full fade-enter-active relative overflow-hidden group transition-colors duration-500 mb-0">
-                <i data-lucide="hard-hat" class="absolute right-[-10px] top-[-10px] w-12 h-12 md:w-24 md:h-24 text-white opacity-[0.04]"></i>
-                <div class="flex justify-between items-start z-10 shrink-0">
-                    <div class="w-full">
-                        <div class="flex justify-between items-start w-full">
-                            <div class="flex flex-wrap gap-1 items-center">
-                                <span class="${badgeClass} text-sm md:text-xl font-bold px-2 py-0.5 rounded shadow inline-block tracking-wide truncate max-w-[150px] md:max-w-none">${data.OBRA}</span>
-                                ${isViagem ? `<span class="bg-rose-700 text-white border border-rose-500 text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow inline-flex items-center gap-1 tracking-wide animate-pulse"><i data-lucide="map-pin" class="w-3 h-3"></i> VIAGEM</span>` : ''}
-                            </div>
-                            <div id="${uniqueId}" class="transition-opacity duration-500 min-h-[20px] md:min-h-[24px]"></div>
-                        </div>
-                        <div class="mt-1 flex justify-between items-center">
-                             <div>
-                                <span class="text-xl md:text-3xl font-bold text-white tracking-wide block leading-none truncate" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${data.EQUIPE || 'EQUIPE'}</span>
-                                <span class="${sinStyle.color} mt-1 text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow inline-flex items-center gap-1 tracking-wide"><i data-lucide="${sinStyle.icon}" class="w-3 h-3"></i> ${sinStyle.label}</span>
-                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-2 mt-2 z-10 flex-grow content-center">
-                    <div class="bg-slate-800/50 p-2 rounded-lg border border-blue-900/50 relative">
-                        <div class="flex items-center gap-1.5 mb-1 text-blue-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-blue">
-                            <i data-lucide="truck" class="w-3 h-3 md:w-4 md:h-4"></i> Caminhão
-                            ${camRodizio}
-                            ${btnCam} </div>
-                        <div class="text-lg md:text-2xl text-white font-mono font-bold leading-none tracking-wide truncate">${data.PLACA_CAM}</div>
-                        <div class="text-blue-300 text-[10px] md:text-xs mt-0.5 font-semibold truncate">${data.CAMINHAO}</div>
-                    </div>
-                    <div class="bg-slate-800/50 p-2 rounded-lg border border-green-900/50 relative">
-                        <div class="flex items-center gap-1.5 mb-1 text-green-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-green">
-                            <i data-lucide="car" class="w-3 h-3 md:w-4 md:h-4"></i> Apoio
-                            ${apoioRodizio}
-                            ${btnApoio} </div>
-                        <div class="text-lg md:text-2xl text-white font-mono font-bold leading-none tracking-wide truncate">${data.PLACA_APOIO}</div>
-                        <div class="text-green-300 text-[10px] md:text-xs mt-0.5 font-semibold truncate">${data.APOIO}</div>
-                    </div>
-                </div>
-                <div class="mt-2 pt-1 border-t border-gray-800 z-10 shrink-0">
-                    <p class="text-gray-400 text-xs md:text-sm leading-snug line-clamp-2 md:line-clamp-1 font-medium">${data.EQUIP}</p>
-                </div>
-            </div>`;
-        }
-
-        function manualPrev() {
-            if(window.slideInterval) clearInterval(window.slideInterval);
-            prevSlide();
-            window.slideInterval = setInterval(nextSlide, SLIDE_DURATION * 1000);
-        }
-
-        function manualNext() {
-            if(window.slideInterval) clearInterval(window.slideInterval);
-            nextSlide();
-            window.slideInterval = setInterval(nextSlide, SLIDE_DURATION * 1000);
-        }
-
-        function prevSlide() {
-            if (slides.length > 1) {
-                if (currentSlideIndex === 0) { currentSlideIndex = slides.length - 1; } 
-                else { currentSlideIndex--; }
-                renderSlide();
-                document.querySelector('body').scrollTop = 0;
-            }
-            const bar = document.getElementById('progress-bar');
-            bar.style.transition = 'none'; bar.style.width = '0%';
-            setTimeout(() => { bar.style.transition = `width ${SLIDE_DURATION}s linear`; bar.style.width = '100%'; }, 50);
-        }
-
-        function nextSlide() {
-            if (slides.length > 0 && currentSlideIndex >= slides.length - 1) { atualizarDados(); }
-            if (slides.length > 1) {
-                currentSlideIndex = (currentSlideIndex + 1) % slides.length;
-                renderSlide();
-                document.querySelector('body').scrollTop = 0;
-            } else {
-                const bar = document.getElementById('progress-bar');
-                bar.style.transition = 'none'; bar.style.width = '0%';
-                setTimeout(() => { bar.style.transition = `width ${SLIDE_DURATION}s linear`; bar.style.width = '100%'; }, 50);
-            }
-        }
-
-        function renderSlide() {
-            if (slides.length === 0) return;
-            document.getElementById('loading').style.display = 'none';
-
-            const slide = slides[currentSlideIndex];
-            const container = document.getElementById('content-grid');
-            const title = document.getElementById('page-title');
-            const dateDisplay = document.getElementById('header-date');
-            const pageCount = document.getElementById('page-count');
-            
-            dateDisplay.innerText = slide.items.length > 0 ? slide.items[0].DATA : "--/--";
-            pageCount.innerText = `PÁGINA ${currentSlideIndex + 1} / ${slides.length}`;
-
-            if (slide.type === 'DIURNO') {
-                title.innerText = "ESCALA DIURNA";
-                title.className = "text-xl md:text-3xl font-bold text-yellow-500 tracking-wide drop-shadow-md leading-none text-center";
-                document.getElementById('header-icon').innerHTML = '<i data-lucide="sun" class="w-5 h-5 md:w-7 md:h-7 text-yellow-400"></i>';
-                document.getElementById('header-icon').className = "p-1.5 md:p-2 rounded-xl bg-yellow-500/10 shadow-[0_0_15px_rgba(234,179,8,0.2)]";
-                document.getElementById('progress-bar').className = "h-full bg-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.6)]";
-            } else {
-                title.innerText = "ESCALA NOTURNA";
-                title.className = "text-xl md:text-3xl font-bold text-indigo-400 tracking-wide drop-shadow-md leading-none text-center";
-                document.getElementById('header-icon').innerHTML = '<i data-lucide="moon" class="w-5 h-5 md:w-7 md:h-7 text-indigo-400"></i>';
-                document.getElementById('header-icon').className = "p-1.5 md:p-2 rounded-xl bg-indigo-500/10 shadow-[0_0_15px_rgba(99,102,241,0.2)]";
-                document.getElementById('progress-bar').className = "h-full bg-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.6)]";
-            }
-
-            container.innerHTML = slide.items.map(item => createCardHTML(item, slide.type)).join('');
-            lucide.createIcons();
-            updateCardsWeather(slide.items);
-
-            const bar = document.getElementById('progress-bar');
-            bar.style.transition = 'none';
-            bar.style.width = '0%';
-            setTimeout(() => { bar.style.transition = `width ${SLIDE_DURATION}s linear`; bar.style.width = '100%'; }, 50);
-        }
-
-        function processData(rows) {
-            let dayItems = []; let nightItems = [];
-            rows.forEach((row, index) => {
-                let d = { 
-                    ID: index, 
-                    DATA: row[0],       // A
-                    TURNO_RAW: row[1],  // B
-                    EQUIPE: row[2],     // C 
-                    VIAGEM: row[3],     // D
-                    OBRA: row[4],       // E
-                    REGIAO: row[5],     // F
-                    SIN: row[6],        // G
-                    
-                    P_CAM: row[7],      // H
-                    CAM: row[8],        // I
-                    EQUIP: row[9],      // J
-                    P_APOIO: row[10],   // K 
-                    APOIO: row[11],     // L
-
-                    LINK_CAM: row[14] || "",   // O 
-                    LINK_APOIO: row[15] || ""  // P 
-                };
-
-                const colObra = (d.OBRA || "").toString().toUpperCase();
-                const isLongText = colObra.length > 25; 
-                if ((colObra.includes("HORIZONTAL") || colObra.includes("VERTICAL")) && !isLongText) return; 
-                if (!d.EQUIPE || d.EQUIPE === "EQUIPE" || d.EQUIPE === "") return; 
-
-                const turnoCol = (d.TURNO_RAW || "").toUpperCase();
-                let currentSection = turnoCol.includes("NOTURNO") || turnoCol.includes("TURNO-N") ? 'NOTURNO' : 'DIURNO';
-
-                const item = {
-                    TYPE: currentSection, ID: d.ID, DATA: d.DATA || "", VIAGEM: d.VIAGEM || "", 
-                    OBRA: d.OBRA || "---", REGIAO: d.REGIAO || "", SINALIZACAO: d.SIN || "", 
-                    EQUIPE: d.EQUIPE || "", PLACA_CAM: d.P_CAM || "---", CAMINHAO: d.CAM || "",
-                    EQUIP: d.EQUIP || "---", PLACA_APOIO: d.P_APOIO || "---", APOIO: d.APOIO || "",
-                    LINK_CAM: d.LINK_CAM, LINK_APOIO: d.LINK_APOIO
-                };
-                if (currentSection === 'DIURNO') dayItems.push(item); else nightItems.push(item);
-            });
-            
-            slides = [];
-            for (let i = 0; i < dayItems.length; i += MAX_ITEMS) slides.push({ type: 'DIURNO', items: dayItems.slice(i, i + MAX_ITEMS) });
-            for (let i = 0; i < nightItems.length; i += MAX_ITEMS) slides.push({ type: 'NOTURNO', items: nightItems.slice(i, i + MAX_ITEMS) });
-            
-            currentSlideIndex = 0;
-            if (slides.length > 0) {
-                renderSlide();
-                if(window.slideInterval) clearInterval(window.slideInterval);
-                if(slides.length > 1) { window.slideInterval = setInterval(nextSlide, SLIDE_DURATION * 1000); }
-            } else { loadMockData(); }
-        }
-
-        function atualizarDados() {
-            const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRSrIAzEFpEZV1t2A5FDqY5OuJSc1LX7-4I0hFMUoL3iPoRTSr-JKeyIIhvCH5ZYzYWSLR9g35OUnnC/pub?gid=104037742&single=true&output=csv';
-            const googleUrlNoCache = googleSheetUrl + '&t=' + new Date().getTime();
-            
-            const urls = [
-                googleUrlNoCache
-            ];
-
-            let attempt = 0;
-
-            function tryFetch() {
-                if (attempt >= urls.length) {
-                    document.getElementById('debug-status').innerText = "Falha Geral. Carregando modo offline...";
-                    loadMockData(); 
-                    return;
-                }
-
-                document.getElementById('debug-status').innerText = `Atualizando dados diretos do Google...`;
-
-                fetch(urls[attempt], { cache: "no-store" })
-                    .then(res => {
-                        if (!res.ok) throw new Error("Falha");
-                        return res.text();
-                    })
-                    .then(csv => {
-                        Papa.parse(csv, { 
-                            header: false, 
-                            skipEmptyLines: true, 
-                            encoding: "UTF-8", 
-                            complete: (results) => { processData(results.data); }
-                        }); 
-                    })
-                    .catch(() => {
-                        attempt++;
-                        tryFetch();
-                    });
-            }
-
-            tryFetch();
-            
-            setTimeout(() => {
-                if(document.getElementById('loading').style.display !== 'none') {
-                    loadMockData();
-                }
-            }, 8000);
-        }
-
-        function loadMockData() {
-            const mockCSV = [
-                ["29/12/2025", "TURNO-D", "EQUIPE ALFA", "", "OBRA EXEMPLO (SEM CONEXÃO)", "SAO PAULO", "VERTICAL", "ABC-1234", "VW 8.150", "EQUIPAMENTO X", "XYZ-9876", "FIAT UNO", "", "", "", ""],
-                ["29/12/2025", "TURNO-D", "EQUIPE BETA", "", "MANUTENÇÃO", "JUNDIAI", "HORIZONTAL", "DEF-5678", "MERCEDES", "EQUIPAMENTO Y", "GHI-1234", "GOL", "", "", "", ""]
-            ];
-            processData(mockCSV);
-            document.getElementById('debug-status').innerText = "MODO OFFLINE";
-            document.getElementById('debug-status').className = "text-red-500 font-bold mt-2 animate-pulse";
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            atualizarDados();
-            updateBaseWeather(); 
-        });
-    </script>
-</body>
-</html>
+            if (text.includes("HORIZONTAL")) return { color: "bg-cyan-600 text-white border border-cyan-400 shadow-lg", icon: "minus", label: "HOR
