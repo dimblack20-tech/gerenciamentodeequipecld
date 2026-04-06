@@ -270,11 +270,11 @@
 
             // ALERTA DE RODÍZIO
             const camRodizio = isRodizio(data.DATA, data.PLACA_CAM) 
-                ? `<span class="bg-yellow-500 text-black text-[8px] md:text-[9px] font-bold px-1 py-0.5 rounded ml-1 animate-pulse">⚠️ RODÍZIO</span>` 
+                ? `<span class="bg-red-600 text-white text-[8px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">⚠️ RODÍZIO</span>` 
                 : '';
             
             const apoioRodizio = isRodizio(data.DATA, data.PLACA_APOIO) 
-                ? `<span class="bg-yellow-500 text-black text-[8px] md:text-[9px] font-bold px-1 py-0.5 rounded ml-1 animate-pulse">⚠️ RODÍZIO</span>` 
+                ? `<span class="bg-red-600 text-white text-[8px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">⚠️ RODÍZIO</span>` 
                 : '';
 
             return `
