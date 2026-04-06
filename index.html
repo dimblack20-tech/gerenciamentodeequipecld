@@ -101,12 +101,10 @@
     <script>
         const SLIDE_DURATION = 15; 
         const MAX_ITEMS = 6;
-        const GOOGLE_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSrIAzEFpEZV1t2A5FDqY5OuJSc1LX7-4I0hFMUoL3iPoRTSr-JKeyIIhvCH5ZYzYWSLR9g35OUnnC/pub?output=csv";
-        const PROXY_URL = "https://corsproxy.io/?"; 
+        const BASE_LAT = "-23.565"; const BASE_LON = "-46.520"; 
 
         const cityCache = {}; 
         const weatherCache = {}; 
-        const BASE_LAT = "-23.565"; const BASE_LON = "-46.520"; 
 
         function updateBaseWeather() {
             fetchWeather(BASE_LAT, BASE_LON).then(data => {
@@ -239,7 +237,6 @@
             const sinStyle = getSignStyle(data.SINALIZACAO);
             const uniqueId = `weather-${data.ID}`;
 
-            // --- BOTÕES DE LINK (SÓ MOBILE) ---
             const btnCam = data.LINK_CAM && data.LINK_CAM.length > 5 
                 ? `<a href="${data.LINK_CAM}" target="_blank" class="md:hidden ml-auto bg-blue-600/80 p-1 rounded hover:bg-blue-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-3 h-3 text-white"></i></a>` 
                 : '';
@@ -367,26 +364,24 @@
         function processData(rows) {
             let dayItems = []; let nightItems = [];
             rows.forEach((row, index) => {
-                // MAPEAMENTO ATUALIZADO (A=0 ... P=15)
                 let d = { 
                     ID: index, 
                     DATA: row[0],       // A
                     TURNO_RAW: row[1],  // B
-                    EQUIPE: row[2],     // C (EQUIPE AGORA É COLUNA C)
+                    EQUIPE: row[2],     // C 
                     VIAGEM: row[3],     // D
                     OBRA: row[4],       // E
                     REGIAO: row[5],     // F
                     SIN: row[6],        // G
                     
-                    P_CAM: row[7],      // H (PLACA-C)
+                    P_CAM: row[7],      // H
                     CAM: row[8],        // I
                     EQUIP: row[9],      // J
-                    P_APOIO: row[10],   // K (PLACA-A)
+                    P_APOIO: row[10],   // K 
                     APOIO: row[11],     // L
 
-                    // LINKS DE LOCALIZAÇÃO (O e P)
-                    LINK_CAM: row[14] || "",   // O - LOCALIZAÇÃO CAMINHÃO
-                    LINK_APOIO: row[15] || ""  // P - LOCALIZAÇÃO APOIO
+                    LINK_CAM: row[14] || "",   // O 
+                    LINK_APOIO: row[15] || ""  // P 
                 };
 
                 const colObra = (d.OBRA || "").toString().toUpperCase();
@@ -419,18 +414,13 @@
             } else { loadMockData(); }
         }
 
-        // --- SISTEMA REDUNDANTE ANTI-CACHE ---
         function atualizarDados() {
-            const uniqueID = Date.now() + "_" + Math.random().toString(36).substr(2, 9);
-            const googleUrlNoCache = GOOGLE_CSV + "&cache_buster=" + uniqueID;
+            const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRSrIAzEFpEZV1t2A5FDqY5OuJSc1LX7-4I0hFMUoL3iPoRTSr-JKeyIIhvCH5ZYzYWSLR9g35OUnnC/pub?output=csv';
+            const googleUrlNoCache = googleSheetUrl + '&t=' + new Date().getTime();
             
             const urls = [
-                const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRSrIAzEFpEZV1t2A5FDqY5OuJSc1LX7-4I0hFMUoL3iPoRTSr-JKeyIIhvCH5ZYzYWSLR9g35OUnnC/pub?output=csv';
-const googleUrlNoCache = googleSheetUrl + '&t=' + new Date().getTime();
-
-const urls = [
-    googleUrlNoCache
-];
+                googleUrlNoCache
+            ];
 
             let attempt = 0;
 
@@ -441,7 +431,7 @@ const urls = [
                     return;
                 }
 
-                document.getElementById('debug-status').innerText = `Atualizando (Método ${attempt + 1})...`;
+                document.getElementById('debug-status').innerText = `Atualizando dados diretos do Google...`;
 
                 fetch(urls[attempt], { cache: "no-store" })
                     .then(res => {
@@ -472,7 +462,6 @@ const urls = [
         }
 
         function loadMockData() {
-            // MOCK DATA ATUALIZADO PARA A NOVA ORDEM (16 COLUNAS)
             const mockCSV = [
                 ["29/12/2025", "TURNO-D", "EQUIPE ALFA", "", "OBRA EXEMPLO (SEM CONEXÃO)", "SAO PAULO", "VERTICAL", "ABC-1234", "VW 8.150", "EQUIPAMENTO X", "XYZ-9876", "FIAT UNO", "", "", "", ""],
                 ["29/12/2025", "TURNO-D", "EQUIPE BETA", "", "MANUTENÇÃO", "JUNDIAI", "HORIZONTAL", "DEF-5678", "MERCEDES", "EQUIPAMENTO Y", "GHI-1234", "GOL", "", "", "", ""]
