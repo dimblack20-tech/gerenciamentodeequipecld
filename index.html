@@ -425,10 +425,12 @@
             const googleUrlNoCache = GOOGLE_CSV + "&cache_buster=" + uniqueID;
             
             const urls = [
-                "https://corsproxy.io/?" + encodeURIComponent(googleUrlNoCache),
-                "https://api.allorigins.win/raw?url=" + encodeURIComponent(googleUrlNoCache),
-                "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(googleUrlNoCache)
-            ];
+                const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRSrIAzEFpEZV1t2A5FDqY5OuJSc1LX7-4I0hFMUoL3iPoRTSr-JKeyIIhvCH5ZYzYWSLR9g35OUnnC/pub?output=csv';
+const googleUrlNoCache = googleSheetUrl + '&t=' + new Date().getTime();
+
+const urls = [
+    googleUrlNoCache
+];
 
             let attempt = 0;
 
