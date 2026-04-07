@@ -12,13 +12,23 @@
             font-family: 'Chakra Petch', sans-serif; 
             background-color: #000000; 
             color: #e2e8f0; 
-            height: 100vh; 
             width: 100vw;
-            overflow: hidden; 
+            overflow-x: hidden;
+        }
+        
+        @media (min-width: 769px) {
+            body { 
+                height: 100vh; 
+                overflow: hidden; 
+            }
         }
         
         @media (max-width: 768px) {
-            body { overflow-y: auto; }
+            body { 
+                min-height: 100vh; 
+                height: auto;
+                overflow-y: auto; 
+            }
             .mobile-scroll { min-height: 100vh; }
         }
 
@@ -33,8 +43,7 @@
 </head>
 <body class="flex flex-col p-2 md:p-3 pb-2 mobile-scroll">
 
-    <header class="relative flex flex-col md:flex-row justify-between items-center mb-2 shrink-0 border-b border-gray-800 pb-2 gap-2 md:gap-0 transition-all duration-500">
-        
+    <header class="relative flex flex-col md:flex-row justify-between items-center mb-3 shrink-0 border-b border-gray-800 pb-2 gap-2 md:gap-0 transition-all duration-500">
         <div class="w-full md:w-1/3 flex flex-row md:flex-col justify-between md:justify-center items-center md:items-start order-2 md:order-1">
             <p id="clock" class="text-4xl md:text-6xl font-mono text-white font-bold tracking-tighter leading-none">00:00</p>
             <div class="flex items-center gap-3 mt-1 pl-1">
@@ -57,23 +66,20 @@
         </div>
 
         <div class="w-full md:w-1/3 flex justify-end items-center order-3">
-            <div id="weather-box-general" class="flex flex-col items-end hidden bg-gray-900/40 px-3 py-1.5 rounded-xl border border-gray-700/50 shadow-lg backdrop-blur-sm">
-                <span class="text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500 mb-0.5">BASE ARICANDUVA</span>
+            <div id="weather-box-general" class="flex flex-col items-end hidden bg-black/60 px-3 py-1.5 rounded-xl border border-gray-700/50 shadow-lg backdrop-blur-sm">
+                <span class="text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-bold text-gray-400 mb-0.5">BASE ARICANDUVA</span>
                 <div class="flex items-center gap-3">
-                    <i id="weather-icon-gen" data-lucide="cloud" class="w-6 h-6 md:w-10 md:h-10 text-blue-400"></i>
+                    <i id="weather-icon-gen" data-lucide="cloud" class="w-6 h-6 md:w-10 md:h-10 text-yellow-400"></i>
                     <span id="weather-temp-gen" class="text-3xl md:text-5xl font-bold font-mono text-white leading-none">--°</span>
-                    <div class="h-6 w-px bg-gray-700"></div>
-                    <div class="flex flex-col leading-none" id="weather-minmax-container">
-                        <span id="weather-max-gen" class="text-xs md:text-base text-orange-400 font-mono font-bold">Max --°</span>
-                        <span id="weather-min-gen" class="text-xs md:text-base text-blue-300 font-mono font-bold">Min --°</span>
-                    </div>
+                    <div class="h-8 w-px bg-gray-700 mx-1"></div>
+                    <div class="flex flex-col leading-none" id="weather-minmax-container"></div>
                 </div>
             </div>
         </div>
     </header>
 
     <main class="flex-grow w-full relative min-h-0"> 
-        <div id="content-grid" class="grid grid-cols-1 landscape:grid-cols-2 md:grid-cols-2 md:grid-rows-3 gap-2 md:gap-3 w-full h-auto md:h-full pb-14 md:pb-0"></div>
+        <div id="content-grid" class="grid grid-cols-1 landscape:grid-cols-2 md:grid-cols-2 md:grid-rows-3 gap-3 md:gap-3 w-full h-auto md:h-full pb-16 md:pb-0"></div>
         
         <div id="loading" class="absolute inset-0 flex items-center justify-center bg-black/95 z-50">
             <div class="text-center">
@@ -85,17 +91,15 @@
         </div>
     </main>
 
-    <button onclick="manualPrev()" class="fixed top-1/2 left-0 -translate-y-1/2 z-50 p-2 md:p-3 rounded-r-xl transition-all duration-300 transform active:scale-95
-        text-white/70 bg-black/20 md:bg-transparent md:text-white/10 md:hover:text-white md:hover:bg-gray-800/90 backdrop-blur-sm md:backdrop-blur-none border border-white/10 md:border-transparent">
+    <button onclick="manualPrev()" class="fixed top-1/2 left-0 -translate-y-1/2 z-50 p-2 md:p-3 rounded-r-xl transition-all duration-300 transform active:scale-95 text-white/70 bg-black/20 md:bg-transparent md:text-white/10 md:hover:text-white md:hover:bg-gray-800/90 backdrop-blur-sm md:backdrop-blur-none border border-white/10 md:border-transparent">
         <i data-lucide="chevron-left" class="w-8 h-8 md:w-10 md:h-10"></i>
     </button>
 
-    <button onclick="manualNext()" class="fixed top-1/2 right-0 -translate-y-1/2 z-50 p-2 md:p-3 rounded-l-xl transition-all duration-300 transform active:scale-95
-        text-white/70 bg-black/20 md:bg-transparent md:text-white/10 md:hover:text-white md:hover:bg-gray-800/90 backdrop-blur-sm md:backdrop-blur-none border border-white/10 md:border-transparent">
+    <button onclick="manualNext()" class="fixed top-1/2 right-0 -translate-y-1/2 z-50 p-2 md:p-3 rounded-l-xl transition-all duration-300 transform active:scale-95 text-white/70 bg-black/20 md:bg-transparent md:text-white/10 md:hover:text-white md:hover:bg-gray-800/90 backdrop-blur-sm md:backdrop-blur-none border border-white/10 md:border-transparent">
         <i data-lucide="chevron-right" class="w-8 h-8 md:w-10 md:h-10"></i>
     </button>
     
-    <div class="fixed bottom-0 left-0 h-1 md:h-1.5 bg-gray-900 w-full z-40"><div id="progress-bar" class="h-full w-0"></div></div>
+    <div class="fixed bottom-0 left-0 h-1.5 md:h-1.5 bg-gray-900 w-full z-40"><div id="progress-bar" class="h-full w-0"></div></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script>
@@ -106,14 +110,40 @@
         const cityCache = {}; 
         const weatherCache = {}; 
 
+        function getWeatherText(code) {
+            if (code === 0) return 'Céu limpo';
+            if (code === 1) return 'Quase limpo';
+            if (code === 2) return 'Parcialmente Nublado';
+            if (code === 3) return 'Nublado';
+            if (code >= 45 && code <= 48) return 'Nevoeiro';
+            if (code >= 51 && code <= 55) return 'Garoa';
+            if (code >= 56 && code <= 57) return 'Garoa gelada';
+            if (code >= 61 && code <= 65) return 'Chuva';
+            if (code >= 66 && code <= 67) return 'Chuva congelante';
+            if (code >= 71 && code <= 77) return 'Neve';
+            if (code >= 80 && code <= 82) return 'Pancadas de Chuva';
+            if (code >= 95 && code <= 99) return 'Tempestades Esparsas';
+            return 'Indefinido';
+        }
+
         function updateBaseWeather() {
             fetchWeather(BASE_LAT, BASE_LON).then(data => {
                 if(!data) return;
                 document.getElementById('weather-temp-gen').innerText = Math.round(data.temp) + "°";
-                document.getElementById('weather-max-gen').innerText = `⬆${data.max}°`;
-                document.getElementById('weather-min-gen').innerText = `⬇${data.min}°`;
                 const iconElement = document.getElementById('weather-icon-gen');
                 iconElement.setAttribute('data-lucide', getWeatherIconName(data.code));
+                
+                const container = document.getElementById('weather-minmax-container');
+                container.innerHTML = `
+                    <span class="text-[10px] md:text-sm text-gray-200 font-bold mb-1">${getWeatherText(data.code)}</span>
+                    <div class="flex gap-2 text-[9px] md:text-xs text-gray-400 mt-0.5">
+                        <span class="text-orange-400 font-bold">⬆${data.max}°</span>
+                        <span class="text-blue-300 font-bold">⬇${data.min}°</span>
+                        <span class="flex items-center gap-0.5 ml-1" title="Chuva"><i data-lucide="droplet" class="w-3 h-3 text-blue-400"></i> ${data.rain}%</span>
+                        <span class="flex items-center gap-0.5" title="Vento"><i data-lucide="wind" class="w-3 h-3 text-gray-400"></i> ${data.wind} km/h</span>
+                    </div>
+                `;
+                
                 document.getElementById('weather-box-general').classList.remove('hidden');
                 lucide.createIcons();
             });
@@ -133,13 +163,16 @@
             const now = Date.now();
             if (weatherCache[cacheKey] && (now - weatherCache[cacheKey].timestamp < 600000)) return weatherCache[cacheKey].data;
             try {
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=America%2FSao_Paulo&forecast_days=1`;
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=America%2FSao_Paulo&forecast_days=1`;
                 const res = await fetch(url);
                 if(!res.ok) throw new Error("Erro API");
                 const json = await res.json();
                 const data = { 
                     temp: Math.round(json.current.temperature_2m), 
                     code: json.current.weather_code, 
+                    humidity: Math.round(json.current.relative_humidity_2m),
+                    wind: Math.round(json.current.wind_speed_10m),
+                    rain: json.daily.precipitation_probability_max[0] || 0,
                     min: Math.round(json.daily.temperature_2m_min[0]),
                     max: Math.round(json.daily.temperature_2m_max[0])
                 };
@@ -180,7 +213,7 @@
                 if(!el) continue;
                 if (!item.REGIAO || item.REGIAO.trim() === "" || item.REGIAO === "---") { el.innerHTML = ""; continue; }
                 
-                el.innerHTML = `<span class="text-[10px] text-gray-500 animate-pulse">🔎 ${item.REGIAO.substring(0,10)}...</span>`;
+                el.innerHTML = `<span class="text-[10px] text-gray-500 animate-pulse mt-1">🔎 Buscando Clima...</span>`;
                 await new Promise(r => setTimeout(r, 150)); 
 
                 const coords = await resolveCity(item.REGIAO);
@@ -188,15 +221,22 @@
                     const w = await fetchWeather(coords.lat, coords.lon);
                     if (w) {
                         el.innerHTML = `
-                            <div class="flex items-center gap-1.5 bg-black/60 px-2 py-1 rounded border border-gray-700/50 shadow-lg">
-                                <div class="flex items-center gap-1">
-                                    <i data-lucide="${getWeatherIconName(w.code)}" class="w-4 h-4 md:w-6 md:h-6 text-yellow-400"></i>
-                                    <span class="text-sm md:text-2xl font-bold text-white leading-none">${w.temp}°</span>
+                            <div class="flex flex-col bg-black/80 px-2.5 py-1.5 rounded-lg border border-gray-700/50 shadow-lg min-w-[110px] md:min-w-[130px] shrink-0">
+                                <div class="flex justify-between items-center gap-3">
+                                    <div class="flex items-center gap-1.5">
+                                        <i data-lucide="${getWeatherIconName(w.code)}" class="w-5 h-5 md:w-7 md:h-7 text-yellow-400 drop-shadow-md"></i>
+                                        <span class="text-sm md:text-xl font-bold text-white leading-none">${w.temp}°</span>
+                                    </div>
+                                    <div class="flex flex-col items-end leading-none">
+                                        <span class="text-[8px] md:text-[9px] text-orange-400 font-mono font-bold mb-0.5">⬆${w.max}°</span>
+                                        <span class="text-[8px] md:text-[9px] text-blue-300 font-mono font-bold">⬇${w.min}°</span>
+                                    </div>
                                 </div>
-                                <div class="w-px h-4 bg-gray-600 mx-1"></div>
-                                <div class="flex flex-col leading-none">
-                                    <span class="text-[8px] md:text-[10px] text-orange-400 font-mono font-bold mb-0.5">⬆${w.max}°</span>
-                                    <span class="text-[8px] md:text-[10px] text-blue-300 font-mono font-bold">⬇${w.min}°</span>
+                                <div class="text-[9px] md:text-[10px] text-gray-300 font-semibold mt-1.5 mb-1.5 truncate tracking-wide">${getWeatherText(w.code)}</div>
+                                <div class="flex justify-between items-center pt-1.5 border-t border-gray-700/80 text-[8px] md:text-[9px] text-gray-400 gap-1.5">
+                                    <span class="flex items-center gap-0.5" title="Chuva"><i data-lucide="droplet" class="w-2.5 h-2.5 text-blue-400"></i>${w.rain}%</span>
+                                    <span class="flex items-center gap-0.5" title="Umidade"><i data-lucide="droplets" class="w-2.5 h-2.5 text-teal-400"></i>${w.humidity}%</span>
+                                    <span class="flex items-center gap-0.5" title="Vento"><i data-lucide="wind" class="w-2.5 h-2.5 text-gray-400"></i>${w.wind}k</span>
                                 </div>
                             </div>`;
                         lucide.createIcons();
@@ -225,9 +265,6 @@
             return { color: "bg-gray-700 text-gray-300 border border-gray-600", icon: "activity", label: text };
         }
 
-        // ==========================================
-        // NOVA FUNÇÃO: VERIFICA RODÍZIO DE SP
-        // ==========================================
         function isRodizio(dataStr, placa) {
             if (!placa || placa === "---" || placa.length < 1) return false;
             if (!dataStr || typeof dataStr !== 'string' || !dataStr.includes('/')) return false;
@@ -236,7 +273,7 @@
             if (parts.length !== 3) return false;
             
             const d = new Date(parts[2], parts[1] - 1, parts[0]);
-            const diaSemana = d.getDay(); // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sáb
+            const diaSemana = d.getDay(); 
             const finalPlaca = placa.trim().slice(-1);
 
             if (diaSemana === 1 && ["1", "2"].includes(finalPlaca)) return true;
@@ -261,14 +298,13 @@
             const uniqueId = `weather-${data.ID}`;
 
             const btnCam = data.LINK_CAM && data.LINK_CAM.length > 5 
-                ? `<a href="${data.LINK_CAM}" target="_blank" class="md:hidden ml-auto bg-blue-600/80 p-1 rounded hover:bg-blue-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-3 h-3 text-white"></i></a>` 
+                ? `<a href="${data.LINK_CAM}" target="_blank" class="md:hidden ml-auto bg-blue-600/80 p-1.5 rounded hover:bg-blue-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></a>` 
                 : '';
             
             const btnApoio = data.LINK_APOIO && data.LINK_APOIO.length > 5 
-                ? `<a href="${data.LINK_APOIO}" target="_blank" class="md:hidden ml-auto bg-green-600/80 p-1 rounded hover:bg-green-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-3 h-3 text-white"></i></a>` 
+                ? `<a href="${data.LINK_APOIO}" target="_blank" class="md:hidden ml-auto bg-green-600/80 p-1.5 rounded hover:bg-green-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></a>` 
                 : '';
 
-            // ALERTA DE RODÍZIO
             const camRodizio = isRodizio(data.DATA, data.PLACA_CAM) 
                 ? `<span class="bg-red-600 text-white text-[8px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">⚠️ RODÍZIO</span>` 
                 : '';
@@ -278,36 +314,36 @@
                 : '';
 
             return `
-            <div class="${cardBackground} border-l-[4px] md:border-l-[8px] ${borderClass} rounded-r-xl px-2 py-2 md:px-3 md:py-2 shadow-2xl flex flex-col justify-between min-h-[140px] md:h-full fade-enter-active relative overflow-hidden group transition-colors duration-500 mb-0">
+            <div class="${cardBackground} border-l-[4px] md:border-l-[8px] ${borderClass} rounded-r-xl px-2 py-3 md:px-3 md:py-2 shadow-2xl flex flex-col justify-between min-h-[170px] h-auto md:h-full fade-enter-active relative overflow-hidden group transition-colors duration-500 mb-0">
                 <i data-lucide="hard-hat" class="absolute right-[-10px] top-[-10px] w-12 h-12 md:w-24 md:h-24 text-white opacity-[0.04]"></i>
-                <div class="flex justify-between items-start z-10 shrink-0">
-                    <div class="w-full">
+                <div class="flex justify-between items-start z-10 shrink-0 gap-2">
+                    <div class="flex-1">
                         <div class="flex justify-between items-start w-full">
                             <div class="flex flex-wrap gap-1 items-center">
                                 <span class="${badgeClass} text-sm md:text-xl font-bold px-2 py-0.5 rounded shadow inline-block tracking-wide truncate max-w-[150px] md:max-w-none">${data.OBRA}</span>
                                 ${isViagem ? `<span class="bg-rose-700 text-white border border-rose-500 text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow inline-flex items-center gap-1 tracking-wide animate-pulse"><i data-lucide="map-pin" class="w-3 h-3"></i> VIAGEM</span>` : ''}
                             </div>
-                            <div id="${uniqueId}" class="transition-opacity duration-500 min-h-[20px] md:min-h-[24px]"></div>
                         </div>
-                        <div class="mt-1 flex justify-between items-center">
+                        <div class="mt-1.5 flex justify-between items-center">
                              <div>
                                 <span class="text-xl md:text-3xl font-bold text-white tracking-wide block leading-none truncate" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${data.EQUIPE || 'EQUIPE'}</span>
                                 <span class="${sinStyle.color} mt-1 text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow inline-flex items-center gap-1 tracking-wide"><i data-lucide="${sinStyle.icon}" class="w-3 h-3"></i> ${sinStyle.label}</span>
                              </div>
                         </div>
                     </div>
+                    <div id="${uniqueId}" class="transition-opacity duration-500 shrink-0"></div>
                 </div>
-                <div class="grid grid-cols-2 gap-2 mt-1 z-10 flex-grow content-center">
-                    <div class="bg-slate-800/50 p-1.5 rounded-lg border border-blue-900/50 relative">
-                        <div class="flex items-center gap-1.5 mb-0.5 text-blue-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-blue">
+                <div class="grid grid-cols-2 gap-2 mt-2 z-10 flex-grow content-center">
+                    <div class="bg-slate-800/50 p-2 rounded-lg border border-blue-900/50 relative">
+                        <div class="flex items-center gap-1.5 mb-1 text-blue-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-blue">
                             <i data-lucide="truck" class="w-3 h-3 md:w-4 md:h-4"></i> Caminhão
                             ${camRodizio}
                             ${btnCam} </div>
                         <div class="text-lg md:text-2xl text-white font-mono font-bold leading-none tracking-wide truncate">${data.PLACA_CAM}</div>
                         <div class="text-blue-300 text-[10px] md:text-xs mt-0.5 font-semibold truncate">${data.CAMINHAO}</div>
                     </div>
-                    <div class="bg-slate-800/50 p-1.5 rounded-lg border border-green-900/50 relative">
-                        <div class="flex items-center gap-1.5 mb-0.5 text-green-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-green">
+                    <div class="bg-slate-800/50 p-2 rounded-lg border border-green-900/50 relative">
+                        <div class="flex items-center gap-1.5 mb-1 text-green-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-green">
                             <i data-lucide="car" class="w-3 h-3 md:w-4 md:h-4"></i> Apoio
                             ${apoioRodizio}
                             ${btnApoio} </div>
@@ -315,8 +351,8 @@
                         <div class="text-green-300 text-[10px] md:text-xs mt-0.5 font-semibold truncate">${data.APOIO}</div>
                     </div>
                 </div>
-                <div class="mt-1 pt-1 border-t border-gray-800 z-10 shrink-0">
-                    <p class="text-gray-400 text-[10px] md:text-sm leading-snug line-clamp-1 font-medium">${data.EQUIP}</p>
+                <div class="mt-2 pt-1 border-t border-gray-800 z-10 shrink-0">
+                    <p class="text-gray-400 text-xs md:text-sm leading-snug line-clamp-2 md:line-clamp-1 font-medium">${data.EQUIP}</p>
                 </div>
             </div>`;
         }
@@ -338,7 +374,7 @@
                 if (currentSlideIndex === 0) { currentSlideIndex = slides.length - 1; } 
                 else { currentSlideIndex--; }
                 renderSlide();
-                document.querySelector('main').scrollTop = 0;
+                document.querySelector('body').scrollTop = 0;
             }
             const bar = document.getElementById('progress-bar');
             bar.style.transition = 'none'; bar.style.width = '0%';
@@ -350,7 +386,7 @@
             if (slides.length > 1) {
                 currentSlideIndex = (currentSlideIndex + 1) % slides.length;
                 renderSlide();
-                document.querySelector('main').scrollTop = 0;
+                document.querySelector('body').scrollTop = 0;
             } else {
                 const bar = document.getElementById('progress-bar');
                 bar.style.transition = 'none'; bar.style.width = '0%';
