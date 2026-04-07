@@ -162,12 +162,15 @@
             const cacheKey = `${lat},${lon}`;
             const now = Date.now();
             
+            // CACHE DE 1 HORA (3600000 milissegundos)
             if (weatherCache[cacheKey] && (now - weatherCache[cacheKey].timestamp < 3600000)) {
                 return weatherCache[cacheKey].data;
             }
+            
+            try {
                 const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=America%2FSao_Paulo&forecast_days=1`;
                 const res = await fetch(url);
-                if(!res.ok) throw new Error("Erro API");
+                if(!res.ok) throw new Error("Erro API Clima");
                 const json = await res.json();
                 const data = { 
                     temp: Math.round(json.current.temperature_2m), 
@@ -180,53 +183,76 @@
                 };
                 weatherCache[cacheKey] = { timestamp: now, data: data };
                 return data;
-            } catch (e) { console.error("Erro Clima", e); return null; }
+            } catch (e) { 
+                console.error("Erro Clima", e); 
+                weatherCache[cacheKey] = { timestamp: now, data: null }; 
+                return null; 
+            }
         }
 
         async function resolveCity(rawText) {
             if (!rawText || rawText.length < 3 || rawText.includes("---")) return null;
             let clean = rawText.replace(/[0-9]/g, '').trim().replace(/\s\s+/g, ' ');
             if(clean.length < 3) return null;
+            
+            if(cityCache[clean] === "NOT_FOUND") return null; 
             if(cityCache[clean]) return cityCache[clean];
+
             try {
                 let q = encodeURIComponent(clean + ", Brazil");
                 let url = `https://geocoding-api.open-meteo.com/v1/search?name=${q}&count=1&language=pt&format=json`;
                 let res = await fetch(url);
+                if (!res.ok) throw new Error("Erro API Geo");
                 let json = await res.json();
+                
                 if (!json.results || json.results.length === 0) {
                     q = encodeURIComponent(clean);
                     url = `https://geocoding-api.open-meteo.com/v1/search?name=${q}&count=1&language=pt&format=json`;
                     res = await fetch(url);
+                    if (!res.ok) throw new Error("Erro API Geo");
                     json = await res.json();
                 }
+                
                 if (json.results && json.results.length > 0) {
                     const result = { lat: json.results[0].latitude, lon: json.results[0].longitude };
                     cityCache[clean] = result;
                     return result;
+                } else {
+                    cityCache[clean] = "NOT_FOUND"; 
+                    return null;
                 }
-            } catch (e) { console.error("Erro Geo", e); }
-            return null;
+            } catch (e) { 
+                console.error("Erro Geo", e); 
+                cityCache[clean] = "NOT_FOUND"; 
+                return null; 
+            }
         }
 
         async function updateCardsWeather(items) {
             for (let item of items) {
                 const elId = `weather-${item.ID}`;
-                const el = document.getElementById(elId);
+                let el = document.getElementById(elId);
                 if(!el) continue;
                 if (!item.REGIAO || item.REGIAO.trim() === "" || item.REGIAO === "---") { el.innerHTML = ""; continue; }
                 
                 el.innerHTML = `<span class="text-[10px] text-gray-500 animate-pulse mt-1">🔎 Buscando Clima...</span>`;
-                await new Promise(r => setTimeout(r, 150)); 
-
+                
                 const coords = await resolveCity(item.REGIAO);
+                
+                el = document.getElementById(elId);
+                if (!el) continue;
+
                 if (coords) {
                     const w = await fetchWeather(coords.lat, coords.lon);
+                    
+                    el = document.getElementById(elId);
+                    if (!el) continue;
+
                     if (w) {
-                        // BLOCO MAIOR: Aumentamos padding, fontes, ícones e largura mínima
                         el.innerHTML = `
-                            <div class="flex flex-col bg-black/80 px-3 py-2 rounded-xl border border-gray-700/50 shadow-lg min-w-[130px] md:min-w-[170px] shrink-0">
+                            <div class="flex flex-col bg-black/80 px-3 py-2 rounded-xl border border-gray-700/50 shadow-lg min-w-[130px] md:min-w-[165px] shrink-0">
                                 <div class="flex justify-between items-center gap-3">
-                                    <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-2">
                                         <i data-lucide="${getWeatherIconName(w.code)}" class="w-6 h-6 md:w-8 md:h-8 text-yellow-400 drop-shadow-md"></i>
                                         <span class="text-base md:text-2xl font-bold text-white leading-none">${w.temp}°</span>
                                     </div>
@@ -255,6 +281,8 @@
         setInterval(updateClock, 1000);
         updateClock();
         updateBaseWeather(); 
+        
+        // CACHE DE 1 HORA PARA O CABEÇALHO TAMBÉM (3600000 milissegundos)
         setInterval(updateBaseWeather, 3600000);
 
         let slides = [];
