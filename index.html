@@ -364,11 +364,11 @@
 
             // LÓGICA ATUALIZADA: SÓ MOSTRA RODÍZIO SE FOR ESCALA DIURNA
             const camRodizio = (themeColor === 'DIURNO' && isRodizio(data.DATA, data.PLACA_CAM)) 
-                ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">⚠️ RODÍZIO 07h-10h</span>` 
+                ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">⚠️ RODÍZIO das 07hrs as 10hrs</span>` 
                 : '';
             
             const apoioRodizio = (themeColor === 'DIURNO' && isRodizio(data.DATA, data.PLACA_APOIO)) 
-                ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">⚠️ RODÍZIO 07h-10h</span>` 
+                ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">⚠️ RODÍZIO das 07hrs as 10hrs</span>` 
                 : '';
 
             return `
