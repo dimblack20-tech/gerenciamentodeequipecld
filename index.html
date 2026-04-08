@@ -363,7 +363,7 @@
                 : '';
 
             // TEXTO DO RODÍZIO DEPENDENDO DO TURNO
-            const textoRodizio = themeColor === 'DIURNO' ? '⚠️ RODÍZIO 07h-10h' : '⚠️ RODÍZIO 17h-20h';
+            const textoRodizio = themeColor === 'DIURNO' ? '⚠️ RODÍZIO das 07hrs as 10hrs' : '⚠️ RODÍZIO das 17hrs as 20hrs';
 
             const camRodizio = isRodizio(data.DATA, data.PLACA_CAM) 
                 ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">${textoRodizio}</span>` 
