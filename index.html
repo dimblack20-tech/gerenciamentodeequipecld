@@ -362,12 +362,15 @@
                 ? `<a href="${data.LINK_APOIO}" target="_blank" class="md:hidden ml-auto bg-green-600/80 p-1.5 rounded hover:bg-green-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></a>` 
                 : '';
 
+            // TEXTO DO RODÍZIO DEPENDENDO DO TURNO
+            const textoRodizio = themeColor === 'DIURNO' ? '⚠️ RODÍZIO 07h-10h' : '⚠️ RODÍZIO 17h-20h';
+
             const camRodizio = isRodizio(data.DATA, data.PLACA_CAM) 
-                ? `<span class="bg-red-600 text-white text-[8px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">⚠️ RODÍZIO</span>` 
+                ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">${textoRodizio}</span>` 
                 : '';
             
             const apoioRodizio = isRodizio(data.DATA, data.PLACA_APOIO) 
-                ? `<span class="bg-red-600 text-white text-[8px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">⚠️ RODÍZIO</span>` 
+                ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">${textoRodizio}</span>` 
                 : '';
 
             return `
