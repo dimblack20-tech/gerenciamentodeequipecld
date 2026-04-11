@@ -1,4 +1,3 @@
-<index.html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -17,18 +16,11 @@
         }
         
         @media (min-width: 769px) {
-            body { 
-                height: 100vh; 
-                overflow: hidden; 
-            }
+            body { height: 100vh; overflow: hidden; }
         }
         
         @media (max-width: 768px) {
-            body { 
-                min-height: 100vh; 
-                height: auto;
-                overflow-y: auto; 
-            }
+            body { min-height: 100vh; height: auto; overflow-y: auto; }
             .mobile-scroll { min-height: 100vh; }
         }
 
@@ -66,8 +58,7 @@
         </div>
 
         <div class="w-full md:w-1/3 flex justify-end items-center order-3">
-            <div id="weather-box-general" class="flex flex-col items-end hidden bg-black/60 px-3 py-1.5 rounded-xl border border-gray-700/50 shadow-lg backdrop-blur-sm">
-                </div>
+            <div id="weather-box-general" class="flex flex-col items-end hidden bg-black/60 px-3 py-1.5 rounded-xl border border-gray-700/50 shadow-lg backdrop-blur-sm"></div>
         </div>
     </header>
 
@@ -167,11 +158,10 @@
             const cacheKey = `${lat},${lon}`;
             const now = Date.now();
             
-            // LÓGICA INTELIGENTE: Guarda sucesso por 1 hora. Guarda falha só por 10 min.
             if (weatherCache[cacheKey]) {
                 const age = now - weatherCache[cacheKey].timestamp;
-                if (weatherCache[cacheKey].data && age < 3600000) return weatherCache[cacheKey].data; // 1 hora
-                if (!weatherCache[cacheKey].data && age < 600000) return null; // 10 min
+                if (weatherCache[cacheKey].data && age < 3600000) return weatherCache[cacheKey].data; 
+                if (!weatherCache[cacheKey].data && age < 600000) return null; 
             }
             
             try {
@@ -205,8 +195,8 @@
             const now = Date.now();
             if(cityCache[clean]) {
                 const age = now - cityCache[clean].timestamp;
-                if(cityCache[clean].data !== "NOT_FOUND" && age < 86400000) return cityCache[clean].data; // Guarda cidade por 24h
-                if(cityCache[clean].data === "NOT_FOUND" && age < 600000) return null; // Se não achou, tenta de novo em 10 min
+                if(cityCache[clean].data !== "NOT_FOUND" && age < 86400000) return cityCache[clean].data; 
+                if(cityCache[clean].data === "NOT_FOUND" && age < 600000) return null; 
             }
 
             try {
@@ -239,14 +229,22 @@
             }
         }
 
-        async function updateCardsWeather(items) {
+        // FUNÇÃO ATUALIZADA: Desenha o clima dentro dos cards normais das equipes e nos cards especiais de clima
+        async function updateCardsWeather(items, isWeatherSlide = false) {
             for (let item of items) {
                 const elId = `weather-${item.ID}`;
                 let el = document.getElementById(elId);
                 if(!el) continue;
-                if (!item.REGIAO || item.REGIAO.trim() === "" || item.REGIAO === "---") { el.innerHTML = ""; continue; }
                 
-                el.innerHTML = `<span class="text-[10px] text-gray-500 animate-pulse mt-1">🔎 Buscando Clima...</span>`;
+                if (!item.REGIAO || item.REGIAO.trim() === "" || item.REGIAO === "---") { 
+                    if(isWeatherSlide) el.innerHTML = `<span class="text-gray-600 text-lg">Sem Localização</span>`;
+                    else el.innerHTML = ""; 
+                    continue; 
+                }
+                
+                el.innerHTML = isWeatherSlide 
+                    ? `<span class="text-blue-400 animate-pulse mt-4 text-xl font-bold">Buscando Clima...</span>`
+                    : `<span class="text-[10px] text-gray-500 animate-pulse mt-1">🔎 Buscando Clima...</span>`;
                 
                 const coords = await resolveCity(item.REGIAO);
                 
@@ -260,25 +258,49 @@
                     if (!el) continue;
 
                     if (w) {
-                        el.innerHTML = `
-                            <div class="flex flex-col bg-black/80 px-3 py-2 rounded-xl border border-gray-700/50 shadow-lg min-w-[130px] md:min-w-[165px] shrink-0">
-                                <div class="flex justify-between items-center gap-3">
-                                    <div class="flex items-center gap-2">
-                                        <i data-lucide="${getWeatherIconName(w.code)}" class="w-6 h-6 md:w-8 md:h-8 text-yellow-400 drop-shadow-md"></i>
-                                        <span class="text-base md:text-2xl font-bold text-white leading-none">${w.temp}°</span>
+                        if (isWeatherSlide) {
+                            // LAYOUT GRANDÃO DA PÁGINA EXCLUSIVA DE CLIMA
+                            el.innerHTML = `
+                                <div class="flex flex-col items-center justify-center h-full w-full">
+                                    <div class="flex items-center gap-4 mb-2">
+                                        <i data-lucide="${getWeatherIconName(w.code)}" class="w-16 h-16 text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.4)]"></i>
+                                        <span class="text-6xl font-bold text-white leading-none font-mono drop-shadow-lg">${w.temp}°</span>
                                     </div>
-                                    <div class="flex flex-col items-end leading-none">
-                                        <span class="text-[9px] md:text-[11px] text-orange-400 font-mono font-bold mb-0.5">⬆${w.max}°</span>
-                                        <span class="text-[9px] md:text-[11px] text-blue-300 font-mono font-bold">⬇${w.min}°</span>
+                                    <span class="text-xl text-gray-200 font-bold mb-4 tracking-wider text-center">${getWeatherText(w.code).toUpperCase()}</span>
+                                    <div class="flex items-center gap-6 text-base font-mono">
+                                        <div class="flex flex-col items-center"><span class="text-gray-500 text-[10px]">MÁX</span><span class="text-orange-400 font-bold text-xl">⬆${w.max}°</span></div>
+                                        <div class="w-px h-8 bg-gray-700"></div>
+                                        <div class="flex flex-col items-center"><span class="text-gray-500 text-[10px]">MÍN</span><span class="text-blue-300 font-bold text-xl">⬇${w.min}°</span></div>
+                                    </div>
+                                    <div class="flex gap-4 mt-6 bg-black/40 px-4 py-2 rounded-full border border-gray-800">
+                                        <span class="flex items-center gap-1.5 text-sm text-gray-300 font-semibold" title="Chuva"><i data-lucide="droplet" class="w-4 h-4 text-blue-400"></i> ${w.rain}%</span>
+                                        <span class="flex items-center gap-1.5 text-sm text-gray-300 font-semibold border-l border-gray-700 pl-4" title="Umidade"><i data-lucide="droplets" class="w-4 h-4 text-teal-400"></i> ${w.humidity}%</span>
+                                        <span class="flex items-center gap-1.5 text-sm text-gray-300 font-semibold border-l border-gray-700 pl-4" title="Vento"><i data-lucide="wind" class="w-4 h-4 text-gray-400"></i> ${w.wind} km/h</span>
                                     </div>
                                 </div>
-                                <div class="text-[11px] md:text-xs text-gray-300 font-semibold mt-2 mb-1.5 truncate tracking-wide">${getWeatherText(w.code)}</div>
-                                <div class="flex justify-between items-center pt-1.5 border-t border-gray-700/80 text-[10px] md:text-[11px] text-gray-400 gap-2">
-                                    <span class="flex items-center gap-0.5" title="Chuva"><i data-lucide="droplet" class="w-3 h-3 text-blue-400"></i>${w.rain}%</span>
-                                    <span class="flex items-center gap-0.5" title="Umidade"><i data-lucide="droplets" class="w-3 h-3 text-teal-400"></i>${w.humidity}%</span>
-                                    <span class="flex items-center gap-0.5" title="Vento"><i data-lucide="wind" class="w-3 h-3 text-gray-400"></i>${w.wind}k</span>
-                                </div>
-                            </div>`;
+                            `;
+                        } else {
+                            // LAYOUT PEQUENO DENTRO DO CARD DA EQUIPE
+                            el.innerHTML = `
+                                <div class="flex flex-col bg-black/80 px-3 py-2 rounded-xl border border-gray-700/50 shadow-lg min-w-[130px] md:min-w-[165px] shrink-0">
+                                    <div class="flex justify-between items-center gap-3">
+                                        <div class="flex items-center gap-2">
+                                            <i data-lucide="${getWeatherIconName(w.code)}" class="w-6 h-6 md:w-8 md:h-8 text-yellow-400 drop-shadow-md"></i>
+                                            <span class="text-base md:text-2xl font-bold text-white leading-none">${w.temp}°</span>
+                                        </div>
+                                        <div class="flex flex-col items-end leading-none">
+                                            <span class="text-[9px] md:text-[11px] text-orange-400 font-mono font-bold mb-0.5">⬆${w.max}°</span>
+                                            <span class="text-[9px] md:text-[11px] text-blue-300 font-mono font-bold">⬇${w.min}°</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-[11px] md:text-xs text-gray-300 font-semibold mt-2 mb-1.5 truncate tracking-wide">${getWeatherText(w.code)}</div>
+                                    <div class="flex justify-between items-center pt-1.5 border-t border-gray-700/80 text-[10px] md:text-[11px] text-gray-400 gap-2">
+                                        <span class="flex items-center gap-0.5" title="Chuva"><i data-lucide="droplet" class="w-3 h-3 text-blue-400"></i>${w.rain}%</span>
+                                        <span class="flex items-center gap-0.5" title="Umidade"><i data-lucide="droplets" class="w-3 h-3 text-teal-400"></i>${w.humidity}%</span>
+                                        <span class="flex items-center gap-0.5" title="Vento"><i data-lucide="wind" class="w-3 h-3 text-gray-400"></i>${w.wind}k</span>
+                                    </div>
+                                </div>`;
+                        }
                         lucide.createIcons();
                     } else { 
                         el.innerHTML = `
@@ -342,12 +364,11 @@
             return false;
         }
 
+        // CARDS NORMAIS DE EQUIPE
         function createCardHTML(data, themeColor) {
             const borderClass = themeColor === 'DIURNO' ? 'border-yellow-500' : 'border-indigo-500';
             
-            const badgeClass = themeColor === 'DIURNO' 
-                ? 'bg-yellow-500 text-black' 
-                : 'bg-indigo-600 text-white';
+            const badgeClass = themeColor === 'DIURNO' ? 'bg-yellow-500 text-black' : 'bg-indigo-600 text-white';
 
             const isViagem = data.VIAGEM && data.VIAGEM.toUpperCase().includes("X");
             const cardBackground = isViagem ? "bg-[#1f1717] border-r-4 border-r-rose-900/50" : "bg-gray-900";
@@ -355,23 +376,18 @@
             const uniqueId = `weather-${data.ID}`;
 
             const btnCam = data.LINK_CAM && data.LINK_CAM.length > 5 
-                ? `<a href="${data.LINK_CAM}" target="_blank" class="md:hidden ml-auto bg-blue-600/80 p-1.5 rounded hover:bg-blue-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></a>` 
-                : '';
+                ? `<a href="${data.LINK_CAM}" target="_blank" class="md:hidden ml-auto bg-blue-600/80 p-1.5 rounded hover:bg-blue-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></a>` : '';
             
             const btnApoio = data.LINK_APOIO && data.LINK_APOIO.length > 5 
-                ? `<a href="${data.LINK_APOIO}" target="_blank" class="md:hidden ml-auto bg-green-600/80 p-1.5 rounded hover:bg-green-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></a>` 
-                : '';
+                ? `<a href="${data.LINK_APOIO}" target="_blank" class="md:hidden ml-auto bg-green-600/80 p-1.5 rounded hover:bg-green-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></a>` : '';
 
-            // TEXTO DO RODÍZIO DEPENDENDO DO TURNO
             const textoRodizio = themeColor === 'DIURNO' ? '⚠️ RODÍZIO das 07h as 10h' : '⚠️ RODÍZIO das 17h as 20h';
 
-            const camRodizio = isRodizio(data.DATA, data.PLACA_CAM) 
-                ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">${textoRodizio}</span>` 
-                : '';
+            const camRodizio = (themeColor === 'DIURNO' && isRodizio(data.DATA, data.PLACA_CAM)) 
+                ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">${textoRodizio}</span>` : '';
             
-            const apoioRodizio = isRodizio(data.DATA, data.PLACA_APOIO) 
-                ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">${textoRodizio}</span>` 
-                : '';
+            const apoioRodizio = (themeColor === 'DIURNO' && isRodizio(data.DATA, data.PLACA_APOIO)) 
+                ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">${textoRodizio}</span>` : '';
 
             return `
             <div class="${cardBackground} border-l-[4px] md:border-l-[8px] ${borderClass} rounded-r-xl px-2 py-3 md:px-3 md:py-2 shadow-2xl flex flex-col justify-between min-h-[170px] h-auto md:h-full fade-enter-active relative overflow-hidden group transition-colors duration-500 mb-0">
@@ -414,6 +430,19 @@
                 <div class="mt-2 pt-1 border-t border-gray-800 z-10 shrink-0">
                     <p class="text-gray-400 text-xs md:text-sm leading-snug line-clamp-2 md:line-clamp-1 font-medium">${data.EQUIP}</p>
                 </div>
+            </div>`;
+        }
+
+        // CARDS ESPECIAIS DE CLIMA
+        function createWeatherCardHTML(data) {
+            const uniqueId = `weather-${data.ID}`;
+            return `
+            <div class="bg-gradient-to-br from-blue-900/30 to-indigo-900/30 border border-blue-500/30 rounded-xl p-4 shadow-[0_0_20px_rgba(59,130,246,0.1)] flex flex-col justify-between min-h-[170px] fade-enter-active relative overflow-hidden group mb-0">
+                <i data-lucide="cloud-lightning" class="absolute right-[-20px] bottom-[-20px] w-32 h-32 text-blue-500 opacity-[0.05]"></i>
+                <div class="z-10 text-center mb-2">
+                    <span class="bg-blue-600/80 text-white text-lg font-bold px-3 py-1 rounded shadow inline-block tracking-widest uppercase border border-blue-400">${data.REGIAO}</span>
+                </div>
+                <div id="${uniqueId}" class="flex-grow flex items-center justify-center transition-opacity duration-500"></div>
             </div>`;
         }
 
@@ -464,7 +493,10 @@
             const dateDisplay = document.getElementById('header-date');
             const pageCount = document.getElementById('page-count');
             
-            dateDisplay.innerText = slide.items.length > 0 ? slide.items[0].DATA : "--/--";
+            // Pega a data da primeira equipe (ignora o slide de clima que não tem data)
+            const firstTeamSlide = slides.find(s => s.type !== 'CLIMA');
+            dateDisplay.innerText = firstTeamSlide && firstTeamSlide.items.length > 0 ? firstTeamSlide.items[0].DATA : "--/--";
+            
             pageCount.innerText = `PÁGINA ${currentSlideIndex + 1} / ${slides.length}`;
 
             if (slide.type === 'DIURNO') {
@@ -473,17 +505,27 @@
                 document.getElementById('header-icon').innerHTML = '<i data-lucide="sun" class="w-5 h-5 md:w-7 md:h-7 text-yellow-400"></i>';
                 document.getElementById('header-icon').className = "p-1.5 md:p-2 rounded-xl bg-yellow-500/10 shadow-[0_0_15px_rgba(234,179,8,0.2)]";
                 document.getElementById('progress-bar').className = "h-full bg-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.6)]";
-            } else {
+                container.innerHTML = slide.items.map(item => createCardHTML(item, slide.type)).join('');
+                updateCardsWeather(slide.items, false);
+            } else if (slide.type === 'NOTURNO') {
                 title.innerText = "ESCALA NOTURNA";
                 title.className = "text-xl md:text-3xl font-bold text-indigo-400 tracking-wide drop-shadow-md leading-none text-center";
                 document.getElementById('header-icon').innerHTML = '<i data-lucide="moon" class="w-5 h-5 md:w-7 md:h-7 text-indigo-400"></i>';
                 document.getElementById('header-icon').className = "p-1.5 md:p-2 rounded-xl bg-indigo-500/10 shadow-[0_0_15px_rgba(99,102,241,0.2)]";
                 document.getElementById('progress-bar').className = "h-full bg-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.6)]";
+                container.innerHTML = slide.items.map(item => createCardHTML(item, slide.type)).join('');
+                updateCardsWeather(slide.items, false);
+            } else if (slide.type === 'CLIMA') {
+                title.innerText = "PAINEL METEOROLÓGICO";
+                title.className = "text-xl md:text-3xl font-bold text-blue-400 tracking-wide drop-shadow-md leading-none text-center";
+                document.getElementById('header-icon').innerHTML = '<i data-lucide="cloud-sun" class="w-5 h-5 md:w-7 md:h-7 text-blue-400"></i>';
+                document.getElementById('header-icon').className = "p-1.5 md:p-2 rounded-xl bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]";
+                document.getElementById('progress-bar').className = "h-full bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.6)]";
+                container.innerHTML = slide.items.map(item => createWeatherCardHTML(item)).join('');
+                updateCardsWeather(slide.items, true);
             }
 
-            container.innerHTML = slide.items.map(item => createCardHTML(item, slide.type)).join('');
             lucide.createIcons();
-            updateCardsWeather(slide.items);
 
             const bar = document.getElementById('progress-bar');
             bar.style.transition = 'none';
@@ -492,7 +534,11 @@
         }
 
         function processData(rows) {
-            let dayItems = []; let nightItems = [];
+            let dayItems = []; 
+            let nightItems = [];
+            let uniqueCities = new Set();
+            let weatherItems = [];
+
             rows.forEach((row, index) => {
                 let d = { 
                     ID: index, 
@@ -530,12 +576,28 @@
                     LINK_CAM: d.LINK_CAM, LINK_APOIO: d.LINK_APOIO
                 };
                 if (currentSection === 'DIURNO') dayItems.push(item); else nightItems.push(item);
+
+                // FILTRANDO CIDADES ÚNICAS PARA O PAINEL DE CLIMA
+                if (d.REGIAO && d.REGIAO.trim() !== "" && d.REGIAO !== "---") {
+                    const cityClean = d.REGIAO.trim().toUpperCase();
+                    if (!uniqueCities.has(cityClean)) {
+                        uniqueCities.add(cityClean);
+                        weatherItems.push({ ID: `W-${index}`, REGIAO: d.REGIAO });
+                    }
+                }
             });
             
             slides = [];
+            
+            // CRIA SLIDES DIURNOS
             for (let i = 0; i < dayItems.length; i += MAX_ITEMS) slides.push({ type: 'DIURNO', items: dayItems.slice(i, i + MAX_ITEMS) });
+            
+            // CRIA SLIDES NOTURNOS
             for (let i = 0; i < nightItems.length; i += MAX_ITEMS) slides.push({ type: 'NOTURNO', items: nightItems.slice(i, i + MAX_ITEMS) });
             
+            // CRIA SLIDES EXCLUSIVOS DE CLIMA NO FINAL
+            for (let i = 0; i < weatherItems.length; i += MAX_ITEMS) slides.push({ type: 'CLIMA', items: weatherItems.slice(i, i + MAX_ITEMS) });
+
             currentSlideIndex = 0;
             if (slides.length > 0) {
                 renderSlide();
@@ -548,9 +610,7 @@
             const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRSrIAzEFpEZV1t2A5FDqY5OuJSc1LX7-4I0hFMUoL3iPoRTSr-JKeyIIhvCH5ZYzYWSLR9g35OUnnC/pub?gid=104037742&single=true&output=csv';
             const googleUrlNoCache = googleSheetUrl + '&t=' + new Date().getTime();
             
-            const urls = [
-                googleUrlNoCache
-            ];
+            const urls = [googleUrlNoCache];
 
             let attempt = 0;
 
@@ -570,9 +630,7 @@
                     })
                     .then(csv => {
                         Papa.parse(csv, { 
-                            header: false, 
-                            skipEmptyLines: true, 
-                            encoding: "UTF-8", 
+                            header: false, skipEmptyLines: true, encoding: "UTF-8", 
                             complete: (results) => { processData(results.data); }
                         }); 
                     })
