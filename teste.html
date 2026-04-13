@@ -239,7 +239,7 @@
         }
 
         // =========================================================
-        // ATUALIZA O CLIMA DOS CARDS DAS EQUIPES (ORIGINAL)
+        // ATUALIZA O CLIMA DOS CARDS DAS EQUIPES (ORIGINAL INTACTO)
         // =========================================================
         async function updateCardsWeather(items) {
             for (let item of items) {
@@ -304,14 +304,16 @@
         }
 
         // =========================================================
-        // ATUALIZA OS CARDS DA PÁGINA FINAL (CLIMA)
+        // ATUALIZA OS CARDS DA PÁGINA FINAL (CLIMA) - NOVO LAYOUT
         // =========================================================
         function createWeatherPageCardHTML(data) {
             const uniqueId = `weather-page-${data.ID}`;
             return `
-            <div class="bg-black/80 border border-gray-700/50 rounded-xl px-4 py-4 shadow-lg flex flex-col justify-between min-h-[170px] h-auto md:h-full fade-enter-active relative overflow-hidden group mb-0 w-full">
-                <div class="z-10 flex justify-center items-center mb-3 shrink-0 border-b border-gray-800 pb-2">
-                    <span class="text-blue-400 text-lg md:text-xl font-bold tracking-widest uppercase">${data.REGIAO}</span>
+            <div class="bg-gray-900 border-l-[4px] md:border-l-[8px] border-blue-500 rounded-xl px-4 py-4 shadow-xl flex flex-col justify-between min-h-[170px] h-auto md:h-full fade-enter-active relative overflow-hidden group mb-0">
+                <i data-lucide="cloud-sun" class="absolute right-[-10px] top-[-10px] w-16 h-16 md:w-24 md:h-24 text-blue-500 opacity-[0.05]"></i>
+                <div class="z-10 flex flex-col justify-center items-center mb-3 shrink-0 pb-2 border-b border-gray-800">
+                    <span class="text-blue-400 text-lg md:text-2xl font-bold tracking-widest uppercase truncate w-full text-center">${data.REGIAO}</span>
+                    <span class="text-gray-500 text-[9px] md:text-[10px] uppercase tracking-widest bg-gray-800/50 px-2 py-0.5 rounded mt-1">Previsão Estimada</span>
                 </div>
                 <div id="${uniqueId}" class="flex-grow flex flex-col justify-center items-center transition-opacity duration-500 z-10 w-full h-full">
                     <span class="text-[10px] text-gray-500 animate-pulse">🔎 Buscando Clima...</span>
@@ -336,28 +338,26 @@
 
                     if (w) {
                         el.innerHTML = `
-                            <div class="flex justify-between items-center gap-3 w-full">
-                                <div class="flex items-center gap-2">
-                                    <i data-lucide="${getWeatherIconName(w.code)}" class="w-10 h-10 md:w-14 md:h-14 text-yellow-400 drop-shadow-md"></i>
-                                    <span class="text-4xl md:text-5xl font-bold text-white leading-none">${w.temp}°</span>
-                                </div>
-                                <div class="flex flex-col items-end leading-none">
+                            <div class="flex justify-center items-center gap-3 w-full mb-2">
+                                <i data-lucide="${getWeatherIconName(w.code)}" class="w-12 h-12 md:w-16 md:h-16 text-yellow-400 drop-shadow-md"></i>
+                                <span class="text-4xl md:text-5xl font-bold text-white leading-none">${w.temp}°</span>
+                                <div class="flex flex-col items-start leading-none ml-2 border-l border-gray-700 pl-3">
                                     <span class="text-xs md:text-sm text-orange-400 font-mono font-bold mb-1">⬆${w.max}°</span>
                                     <span class="text-xs md:text-sm text-blue-300 font-mono font-bold">⬇${w.min}°</span>
                                 </div>
                             </div>
-                            <div class="text-sm md:text-lg text-gray-300 font-semibold mt-3 mb-2 w-full text-center tracking-wide">${getWeatherText(w.code)}</div>
-                            <div class="flex justify-between items-center w-full pt-2 border-t border-gray-700/80 text-xs md:text-sm text-gray-400 gap-2 px-1">
-                                <span class="flex items-center gap-1.5" title="Chuva"><i data-lucide="droplet" class="w-4 h-4 text-blue-400"></i>${w.rain}%</span>
-                                <span class="flex items-center gap-1.5" title="Umidade"><i data-lucide="droplets" class="w-4 h-4 text-teal-400"></i>${w.humidity}%</span>
-                                <span class="flex items-center gap-1.5" title="Vento"><i data-lucide="wind" class="w-4 h-4 text-gray-400"></i>${w.wind} k/h</span>
+                            <div class="text-sm md:text-base text-gray-300 font-semibold mb-3 w-full text-center tracking-wide">${getWeatherText(w.code)}</div>
+                            <div class="flex justify-between items-center w-full pt-3 border-t border-gray-700/80 text-xs md:text-sm text-gray-400 gap-2 px-2">
+                                <span class="flex items-center gap-1" title="Chuva"><i data-lucide="droplet" class="w-4 h-4 text-blue-400"></i>${w.rain}%</span>
+                                <span class="flex items-center gap-1" title="Umidade"><i data-lucide="droplets" class="w-4 h-4 text-teal-400"></i>${w.humidity}%</span>
+                                <span class="flex items-center gap-1" title="Vento"><i data-lucide="wind" class="w-4 h-4 text-gray-400"></i>${w.wind} k/h</span>
                             </div>`;
                         lucide.createIcons();
                     } else {
                         el.innerHTML = `
                         <div class="flex items-center justify-center w-full h-full">
                             <span class="text-[10px] md:text-xs text-red-400 font-bold tracking-wider flex items-center gap-1">
-                                <i data-lucide="satellite-dish" class="w-4 h-4 animate-pulse"></i> SEM SINAL DO SATÉLITE
+                                <i data-lucide="satellite-dish" class="w-4 h-4 animate-pulse"></i> SEM SINAL
                             </span>
                         </div>`;
                         lucide.createIcons();
@@ -366,7 +366,7 @@
                     el.innerHTML = `
                     <div class="flex items-center justify-center w-full h-full">
                         <span class="text-[10px] md:text-xs text-red-400 font-bold tracking-wider flex items-center gap-1">
-                            <i data-lucide="map-pin-off" class="w-4 h-4"></i> LOCAL NÃO ENCONTRADO
+                            <i data-lucide="map-pin-off" class="w-4 h-4"></i> NÃO ENCONTRADO
                         </span>
                     </div>`;
                     lucide.createIcons();
@@ -416,7 +416,7 @@
             return false;
         }
 
-        // SEU CARD ORIGINAL DE EQUIPES (INTACTO)
+        // SEU CARD ORIGINAL DE EQUIPE
         function createCardHTML(data, themeColor) {
             const borderClass = themeColor === 'DIURNO' ? 'border-yellow-500' : 'border-indigo-500';
             
@@ -566,8 +566,9 @@
                 updateCardsWeather(slide.items);
             
             } else if (slide.type === 'CLIMA') {
-                title.innerText = "PREVISÃO ESTIMADA";
-                title.className = "text-xl md:text-3xl font-bold text-blue-400 tracking-wide drop-shadow-md leading-none text-center";
+                // TELA NOVA DE PREVISÃO ESTIMADA COM NOVO LAYOUT
+                title.innerText = "PAINEL METEOROLÓGICO";
+                title.className = "text-xl md:text-3xl font-bold text-blue-400 tracking-wide drop-shadow-md leading-none text-center uppercase";
                 document.getElementById('header-icon').innerHTML = '<i data-lucide="cloud-sun" class="w-5 h-5 md:w-7 md:h-7 text-blue-400"></i>';
                 document.getElementById('header-icon').className = "p-1.5 md:p-2 rounded-xl bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]";
                 document.getElementById('progress-bar').className = "h-full bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.6)]";
