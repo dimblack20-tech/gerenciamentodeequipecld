@@ -14,7 +14,7 @@
             color: #e2e8f0; 
             width: 100vw;
             overflow-x: hidden;
-            /* BLOQUEIA SELEÇÃO DE TEXTO PARA O TOQUE NO CELULAR FUNCIONAR COMO APLICATIVO */
+            /* BLOQUEIA SELEÇÃO DE TEXTO PARA O TOQUE NO CELULAR FUNCIONAR LISO */
             -webkit-user-select: none;
             user-select: none;
             -webkit-touch-callout: none;
@@ -167,13 +167,13 @@
 
         // ESPIÕES DE TELA: Sentem o toque do dedo ou clique do mouse
         document.addEventListener('mousedown', (e) => { 
-            if(e.button === 0 && !e.target.closest('button') && !e.target.closest('a')) pauseSlide(); 
+            if(e.button === 0 && !e.target.closest('button')) pauseSlide(); 
         }); 
         document.addEventListener('mouseup', resumeSlide);
         document.addEventListener('mouseleave', resumeSlide);
         
         document.addEventListener('touchstart', (e) => {
-            if(!e.target.closest('button') && !e.target.closest('a')) pauseSlide();
+            if(!e.target.closest('button')) pauseSlide();
         }, {passive: true});
         document.addEventListener('touchend', resumeSlide);
         document.addEventListener('touchcancel', resumeSlide);
@@ -266,7 +266,6 @@
                 weatherCache[cacheKey] = { timestamp: now, data: data };
                 return data;
             } catch (e) { 
-                console.error("Erro Clima", e); 
                 weatherCache[cacheKey] = { timestamp: now, data: null }; 
                 return null; 
             }
@@ -308,7 +307,6 @@
                     return null;
                 }
             } catch (e) { 
-                console.error("Erro Geo", e); 
                 cityCache[clean] = { timestamp: now, data: "NOT_FOUND" }; 
                 return null; 
             }
@@ -331,7 +329,7 @@
                 if (!el || !w) continue;
 
                 if (isWeatherPage) {
-                    // LAYOUT DA PÁGINA FINAL (DISTRIBUÍDO)
+                    // LAYOUT DA PÁGINA FINAL (DISTRIBUÍDO E BONITO)
                     el.innerHTML = `
                         <div class="flex flex-col justify-between items-center w-full h-full py-1">
                             <div class="flex justify-center items-center gap-4 w-full">
@@ -473,8 +471,28 @@
             </div>`;
         }
 
-        let currentSlideIndex = 0;
-        let slides = [];
+        function manualPrev() { prevSlide(); }
+        function manualNext() { nextSlide(); }
+
+        function prevSlide() {
+            if (slides.length > 1) {
+                if (currentSlideIndex === 0) { currentSlideIndex = slides.length - 1; } 
+                else { currentSlideIndex--; }
+                renderSlide();
+                document.querySelector('body').scrollTop = 0;
+            }
+        }
+
+        function nextSlide() {
+            if (slides.length > 0 && currentSlideIndex >= slides.length - 1) { atualizarDados(); }
+            if (slides.length > 1) {
+                currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+                renderSlide();
+                document.querySelector('body').scrollTop = 0;
+            } else {
+                resetAndStartTimer();
+            }
+        }
 
         function renderSlide() {
             if (slides.length === 0) return;
@@ -486,16 +504,15 @@
             const pageCount = document.getElementById('page-count');
             
             const firstTeamSlide = slides.find(s => s.type !== 'CLIMA');
-            dateDisplay.innerText = firstTeamSlide ? firstTeamSlide.items[0].DATA : "--/--";
+            dateDisplay.innerText = firstTeamSlide && firstTeamSlide.items.length > 0 ? firstTeamSlide.items[0].DATA : "--/--";
             pageCount.innerText = `PÁGINA ${currentSlideIndex + 1} / ${slides.length}`;
 
             if (slide.type === 'CLIMA') {
-                title.innerText = "PREVISÃO ESTIMADA";
+                title.innerText = "PAINEL METEOROLÓGICO";
                 title.className = "text-xl md:text-3xl font-bold text-blue-400 tracking-wide drop-shadow-md leading-none text-center uppercase";
                 document.getElementById('header-icon').innerHTML = '<i data-lucide="cloud-sun" class="w-5 h-5 md:w-7 md:h-7 text-blue-400"></i>';
                 document.getElementById('header-icon').className = "p-1.5 md:p-2 rounded-xl bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]";
                 document.getElementById('progress-bar').className = "h-full bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.6)]";
-                
                 container.innerHTML = slide.items.map(item => createWeatherPageCardHTML(item)).join('');
                 updateCardsWeather(slide.items, true);
             } else {
@@ -504,7 +521,6 @@
                 document.getElementById('header-icon').innerHTML = `<i data-lucide="${slide.type === 'DIURNO' ? 'sun' : 'moon'}" class="w-5 h-5 md:w-7 md:h-7"></i>`;
                 document.getElementById('header-icon').className = `p-1.5 md:p-2 rounded-xl ${slide.type === 'DIURNO' ? 'bg-yellow-500/10 shadow-[0_0_15px_rgba(234,179,8,0.2)]' : 'bg-indigo-500/10 shadow-[0_0_15px_rgba(99,102,241,0.2)]'}`;
                 document.getElementById('progress-bar').className = `h-full ${slide.type === 'DIURNO' ? 'bg-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.6)]' : 'bg-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.6)]'}`;
-                
                 container.innerHTML = slide.items.map(item => createCardHTML(item, slide.type)).join('');
                 updateCardsWeather(slide.items, false);
             }
@@ -519,7 +535,6 @@
             let weatherItems = [];
 
             rows.forEach((row, index) => {
-                if (index === 0 && row[0].includes("DATA")) return; // Pula cabeçalho 
                 let d = { 
                     DATA: row[0] || "",       
                     TURNO_RAW: row[1] || "",  
@@ -533,15 +548,15 @@
                     EQUIP: row[9] || "---",      
                     P_APOIO: row[10] || "---",   
                     APOIO: row[11] || "",     
-                    LINK_CAM: row[14] || "",   
-                    LINK_APOIO: row[15] || "", 
                     ID: index
                 };
 
                 const colObra = (d.OBRA || "").toString().toUpperCase();
                 const isLongText = colObra.length > 25; 
                 if ((colObra.includes("HORIZONTAL") || colObra.includes("VERTICAL")) && !isLongText) return; 
-                if (!d.EQUIPE || d.EQUIPE === "EQUIPE" || d.EQUIPE === "") return; 
+                
+                // O NOSSO VERDADEIRO FILTRO DE CABEÇALHO E LINHAS VAZIAS:
+                if (!d.EQUIPE || d.EQUIPE.toUpperCase() === "EQUIPE" || d.EQUIPE === "") return; 
 
                 const turnoCol = (d.TURNO_RAW || "").toUpperCase();
                 let currentSection = turnoCol.includes("NOTURNO") || turnoCol.includes("TURNO-N") ? 'NOTURNO' : 'DIURNO';
@@ -550,12 +565,12 @@
                     TYPE: currentSection, ID: d.ID, DATA: d.DATA || "", VIAGEM: d.VIAGEM || "", 
                     OBRA: d.OBRA || "---", REGIAO: d.REGIAO || "", SINALIZACAO: d.SIN || "", 
                     EQUIPE: d.EQUIPE || "", PLACA_CAM: d.P_CAM || "---", CAMINHAO: d.CAM || "",
-                    EQUIP: d.EQUIP || "---", PLACA_APOIO: d.P_APOIO || "---", APOIO: d.APOIO || "",
-                    LINK_CAM: d.LINK_CAM, LINK_APOIO: d.LINK_APOIO
+                    EQUIP: d.EQUIP || "---", PLACA_APOIO: d.P_APOIO || "---", APOIO: d.APOIO || ""
                 };
                 
                 if (currentSection === 'DIURNO') dayItems.push(item); else nightItems.push(item);
 
+                // SEPARA AS CIDADES ÚNICAS (Ignora vazios)
                 if (d.REGIAO && d.REGIAO.trim() !== "" && d.REGIAO !== "---") {
                     const cityClean = d.REGIAO.trim().toUpperCase();
                     if (!uniqueCities.has(cityClean)) {
@@ -616,8 +631,8 @@
 
         function loadMockData() {
             const mockCSV = [
-                ["29/12/2025", "TURNO-D", "EQUIPE ALFA", "", "OBRA EXEMPLO (SEM CONEXÃO)", "SAO PAULO", "VERTICAL", "ABC-1234", "VW 8.150", "EQUIPAMENTO X", "XYZ-9876", "FIAT UNO", "", "", "", ""],
-                ["29/12/2025", "TURNO-D", "EQUIPE BETA", "", "MANUTENÇÃO", "JUNDIAI", "HORIZONTAL", "DEF-5678", "MERCEDES", "EQUIPAMENTO Y", "GHI-1234", "GOL", "", "", "", ""]
+                ["29/12/2025", "TURNO-D", "EQUIPE ALFA", "", "OBRA EXEMPLO (SEM CONEXÃO)", "SAO PAULO", "VERTICAL", "ABC-1234", "VW 8.150", "EQUIPAMENTO X", "XYZ-9876", "FIAT UNO", "", "", "", "", "12345"],
+                ["29/12/2025", "TURNO-D", "EQUIPE BETA", "", "MANUTENÇÃO", "JUNDIAI", "HORIZONTAL", "DEF-5678", "MERCEDES", "EQUIPAMENTO Y", "GHI-1234", "GOL", "", "", "", "", "67890"]
             ];
             processData(mockCSV);
             document.getElementById('debug-status').innerText = "MODO OFFLINE";
