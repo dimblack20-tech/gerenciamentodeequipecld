@@ -14,6 +14,10 @@
             color: #e2e8f0; 
             width: 100vw;
             overflow-x: hidden;
+            /* BLOQUEIA SELEÇÃO DE TEXTO PARA O TOQUE NO CELULAR FUNCIONAR COMO APLICATIVO */
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
         }
         
         @media (min-width: 769px) {
@@ -99,9 +103,83 @@
         const SLIDE_DURATION = 15; 
         const MAX_ITEMS = 6;
         const BASE_LAT = "-23.565"; const BASE_LON = "-46.520"; 
+        
+        // CONFIGURAÇÃO DO APPSHEET
+        const APP_ID = "GERENCIAMENTODEEQUIPES-V2-729853257-26-01-13-2";
+        const APP_FORM_VIEW = "GERENCIAMENTO_Form"; 
 
         const cityCache = {}; 
         const weatherCache = {}; 
+
+        // -------------------------------------------------------------
+        // SISTEMA DE PAUSA (ESTILO STORIES)
+        // -------------------------------------------------------------
+        let slideTimerId;
+        let isPaused = false;
+        let slideStartTime;
+        let timeLeft = SLIDE_DURATION * 1000;
+
+        function startSlideTimer(duration) {
+            clearTimeout(slideTimerId);
+            const bar = document.getElementById('progress-bar');
+            bar.style.transition = `width ${duration}ms linear`;
+            bar.style.width = '100%';
+            
+            slideStartTime = Date.now();
+            timeLeft = duration;
+
+            slideTimerId = setTimeout(() => {
+                nextSlide();
+            }, duration);
+        }
+
+        function resetAndStartTimer() {
+            isPaused = false;
+            clearTimeout(slideTimerId);
+            const bar = document.getElementById('progress-bar');
+            bar.style.transition = 'none';
+            bar.style.width = '0%';
+            
+            setTimeout(() => {
+                if(!isPaused) {
+                    startSlideTimer(SLIDE_DURATION * 1000);
+                }
+            }, 50);
+        }
+
+        function pauseSlide() {
+            if (isPaused) return;
+            isPaused = true;
+            clearTimeout(slideTimerId);
+            
+            // Congela a barrinha onde ela parou
+            const bar = document.getElementById('progress-bar');
+            const computedWidth = window.getComputedStyle(bar).width;
+            bar.style.transition = 'none';
+            bar.style.width = computedWidth;
+            
+            // Calcula quanto tempo sobrou
+            const elapsed = Date.now() - slideStartTime;
+            timeLeft = timeLeft - elapsed;
+        }
+
+        function resumeSlide() {
+            if (!isPaused) return;
+            isPaused = false;
+            // Se soltar e faltar menos de 1 seg, ele dá uma folguinha de 1 seg pra pessoa ler
+            if (timeLeft < 1000) timeLeft = 1000; 
+            startSlideTimer(timeLeft);
+        }
+
+        // ESPIÕES DE TELA: Sentem o toque do dedo ou clique do mouse
+        document.addEventListener('mousedown', (e) => { if(e.button === 0) pauseSlide(); }); 
+        document.addEventListener('mouseup', resumeSlide);
+        document.addEventListener('mouseleave', resumeSlide);
+        
+        document.addEventListener('touchstart', pauseSlide, {passive: true});
+        document.addEventListener('touchend', resumeSlide);
+        document.addEventListener('touchcancel', resumeSlide);
+        // -------------------------------------------------------------
 
         function getWeatherText(code) {
             if (code === 0) return 'Céu limpo';
@@ -238,9 +316,6 @@
             }
         }
 
-        // =========================================================
-        // ATUALIZA O CLIMA DOS CARDS DAS EQUIPES (ORIGINAL INTACTO)
-        // =========================================================
         async function updateCardsWeather(items) {
             for (let item of items) {
                 const elId = `weather-${item.ID}`;
@@ -303,9 +378,7 @@
             }
         }
 
-        // =========================================================
-        // ATUALIZA OS CARDS DA PÁGINA FINAL (CLIMA) - NOVO LAYOUT
-        // =========================================================
+        // FUNÇÃO DE CLIMA PARA A TELA FINAL (ESPALHADA)
         function createWeatherPageCardHTML(data) {
             const uniqueId = `weather-page-${data.ID}`;
             return `
@@ -340,13 +413,13 @@
                         el.innerHTML = `
                             <div class="flex justify-center items-center gap-3 w-full mb-2">
                                 <i data-lucide="${getWeatherIconName(w.code)}" class="w-12 h-12 md:w-16 md:h-16 text-yellow-400 drop-shadow-md"></i>
-                                <span class="text-4xl md:text-5xl font-bold text-white leading-none">${w.temp}°</span>
+                                <span class="text-4xl md:text-5xl font-bold text-white leading-none font-mono">${w.temp}°</span>
                                 <div class="flex flex-col items-start leading-none ml-2 border-l border-gray-700 pl-3">
                                     <span class="text-xs md:text-sm text-orange-400 font-mono font-bold mb-1">⬆${w.max}°</span>
                                     <span class="text-xs md:text-sm text-blue-300 font-mono font-bold">⬇${w.min}°</span>
                                 </div>
                             </div>
-                            <div class="text-sm md:text-base text-gray-300 font-semibold mb-3 w-full text-center tracking-wide">${getWeatherText(w.code)}</div>
+                            <div class="text-sm md:text-base text-gray-300 font-semibold mb-3 w-full text-center tracking-wide uppercase">${getWeatherText(w.code)}</div>
                             <div class="flex justify-between items-center w-full pt-3 border-t border-gray-700/80 text-xs md:text-sm text-gray-400 gap-2 px-2">
                                 <span class="flex items-center gap-1" title="Chuva"><i data-lucide="droplet" class="w-4 h-4 text-blue-400"></i>${w.rain}%</span>
                                 <span class="flex items-center gap-1" title="Umidade"><i data-lucide="droplets" class="w-4 h-4 text-teal-400"></i>${w.humidity}%</span>
@@ -373,7 +446,6 @@
                 }
             }
         }
-        // =========================================================
 
         function updateClock() {
             const now = new Date();
@@ -416,7 +488,7 @@
             return false;
         }
 
-        // SEU CARD ORIGINAL DE EQUIPE
+        // SEU CARD ORIGINAL DE EQUIPE + BOTÃO APPSHEET
         function createCardHTML(data, themeColor) {
             const borderClass = themeColor === 'DIURNO' ? 'border-yellow-500' : 'border-indigo-500';
             
@@ -447,6 +519,10 @@
                 ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">${textoRodizio}</span>` 
                 : '';
 
+            // BOTÃO DO APPSHEET
+            const appSheetLink = `https://www.appsheet.com/start/${APP_ID}#control=${APP_FORM_VIEW}&row=${encodeURIComponent(data.ID_KEY)}`;
+            const btnEdit = data.ID_KEY ? `<a href="${appSheetLink}" class="md:hidden ml-3 bg-gray-800 border border-gray-700 p-1.5 rounded-lg shadow-lg flex items-center justify-center hover:bg-gray-700 transition active:scale-95 z-50"><i data-lucide="pencil" class="w-4 h-4 text-yellow-400"></i></a>` : '';
+
             return `
             <div class="${cardBackground} border-l-[4px] md:border-l-[8px] ${borderClass} rounded-r-xl px-2 py-3 md:px-3 md:py-2 shadow-2xl flex flex-col justify-between min-h-[170px] h-auto md:h-full fade-enter-active relative overflow-hidden group transition-colors duration-500 mb-0">
                 <i data-lucide="hard-hat" class="absolute right-[-10px] top-[-10px] w-12 h-12 md:w-24 md:h-24 text-white opacity-[0.04]"></i>
@@ -459,9 +535,12 @@
                             </div>
                         </div>
                         <div class="mt-1.5 flex justify-between items-center">
-                             <div>
-                                <span class="text-xl md:text-3xl font-bold text-white tracking-wide block leading-none truncate" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${data.EQUIPE || 'EQUIPE'}</span>
-                                <span class="${sinStyle.color} mt-1 text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow inline-flex items-center gap-1 tracking-wide"><i data-lucide="${sinStyle.icon}" class="w-3 h-3"></i> ${sinStyle.label}</span>
+                             <div class="flex items-center">
+                                <div>
+                                    <span class="text-xl md:text-3xl font-bold text-white tracking-wide block leading-none truncate" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${data.EQUIPE || 'EQUIPE'}</span>
+                                    <span class="${sinStyle.color} mt-1 text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow inline-flex items-center gap-1 tracking-wide"><i data-lucide="${sinStyle.icon}" class="w-3 h-3"></i> ${sinStyle.label}</span>
+                                </div>
+                                ${btnEdit}
                              </div>
                         </div>
                     </div>
@@ -480,239 +559,4 @@
                         <div class="flex items-center gap-1.5 mb-1 text-green-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-green">
                             <i data-lucide="car" class="w-3 h-3 md:w-4 md:h-4"></i> Apoio
                             ${apoioRodizio}
-                            ${btnApoio} </div>
-                        <div class="text-lg md:text-2xl text-white font-mono font-bold leading-none tracking-wide truncate">${data.PLACA_APOIO}</div>
-                        <div class="text-green-300 text-[10px] md:text-xs mt-0.5 font-semibold truncate">${data.APOIO}</div>
-                    </div>
-                </div>
-                <div class="mt-2 pt-1 border-t border-gray-800 z-10 shrink-0">
-                    <p class="text-gray-400 text-xs md:text-sm leading-snug line-clamp-2 md:line-clamp-1 font-medium">${data.EQUIP}</p>
-                </div>
-            </div>`;
-        }
-
-        function manualPrev() {
-            if(window.slideInterval) clearInterval(window.slideInterval);
-            prevSlide();
-            window.slideInterval = setInterval(nextSlide, SLIDE_DURATION * 1000);
-        }
-
-        function manualNext() {
-            if(window.slideInterval) clearInterval(window.slideInterval);
-            nextSlide();
-            window.slideInterval = setInterval(nextSlide, SLIDE_DURATION * 1000);
-        }
-
-        function prevSlide() {
-            if (slides.length > 1) {
-                if (currentSlideIndex === 0) { currentSlideIndex = slides.length - 1; } 
-                else { currentSlideIndex--; }
-                renderSlide();
-                document.querySelector('body').scrollTop = 0;
-            }
-            const bar = document.getElementById('progress-bar');
-            bar.style.transition = 'none'; bar.style.width = '0%';
-            setTimeout(() => { bar.style.transition = `width ${SLIDE_DURATION}s linear`; bar.style.width = '100%'; }, 50);
-        }
-
-        function nextSlide() {
-            if (slides.length > 0 && currentSlideIndex >= slides.length - 1) { atualizarDados(); }
-            if (slides.length > 1) {
-                currentSlideIndex = (currentSlideIndex + 1) % slides.length;
-                renderSlide();
-                document.querySelector('body').scrollTop = 0;
-            } else {
-                const bar = document.getElementById('progress-bar');
-                bar.style.transition = 'none'; bar.style.width = '0%';
-                setTimeout(() => { bar.style.transition = `width ${SLIDE_DURATION}s linear`; bar.style.width = '100%'; }, 50);
-            }
-        }
-
-        function renderSlide() {
-            if (slides.length === 0) return;
-            document.getElementById('loading').style.display = 'none';
-
-            const slide = slides[currentSlideIndex];
-            const container = document.getElementById('content-grid');
-            const title = document.getElementById('page-title');
-            const dateDisplay = document.getElementById('header-date');
-            const pageCount = document.getElementById('page-count');
-            
-            const firstTeamSlide = slides.find(s => s.type !== 'CLIMA');
-            dateDisplay.innerText = firstTeamSlide && firstTeamSlide.items.length > 0 ? firstTeamSlide.items[0].DATA : "--/--";
-            
-            pageCount.innerText = `PÁGINA ${currentSlideIndex + 1} / ${slides.length}`;
-
-            if (slide.type === 'DIURNO') {
-                title.innerText = "ESCALA DIURNA";
-                title.className = "text-xl md:text-3xl font-bold text-yellow-500 tracking-wide drop-shadow-md leading-none text-center";
-                document.getElementById('header-icon').innerHTML = '<i data-lucide="sun" class="w-5 h-5 md:w-7 md:h-7 text-yellow-400"></i>';
-                document.getElementById('header-icon').className = "p-1.5 md:p-2 rounded-xl bg-yellow-500/10 shadow-[0_0_15px_rgba(234,179,8,0.2)]";
-                document.getElementById('progress-bar').className = "h-full bg-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.6)]";
-                
-                container.innerHTML = slide.items.map(item => createCardHTML(item, slide.type)).join('');
-                lucide.createIcons();
-                updateCardsWeather(slide.items);
-            
-            } else if (slide.type === 'NOTURNO') {
-                title.innerText = "ESCALA NOTURNA";
-                title.className = "text-xl md:text-3xl font-bold text-indigo-400 tracking-wide drop-shadow-md leading-none text-center";
-                document.getElementById('header-icon').innerHTML = '<i data-lucide="moon" class="w-5 h-5 md:w-7 md:h-7 text-indigo-400"></i>';
-                document.getElementById('header-icon').className = "p-1.5 md:p-2 rounded-xl bg-indigo-500/10 shadow-[0_0_15px_rgba(99,102,241,0.2)]";
-                document.getElementById('progress-bar').className = "h-full bg-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.6)]";
-                
-                container.innerHTML = slide.items.map(item => createCardHTML(item, slide.type)).join('');
-                lucide.createIcons();
-                updateCardsWeather(slide.items);
-            
-            } else if (slide.type === 'CLIMA') {
-                // TELA NOVA DE PREVISÃO ESTIMADA COM NOVO LAYOUT
-                title.innerText = "PREVISÃO DO TEMPO ESTIMADA";
-                title.className = "text-xl md:text-3xl font-bold text-blue-400 tracking-wide drop-shadow-md leading-none text-center uppercase";
-                document.getElementById('header-icon').innerHTML = '<i data-lucide="cloud-sun" class="w-5 h-5 md:w-7 md:h-7 text-blue-400"></i>';
-                document.getElementById('header-icon').className = "p-1.5 md:p-2 rounded-xl bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]";
-                document.getElementById('progress-bar').className = "h-full bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.6)]";
-                
-                container.innerHTML = slide.items.map(item => createWeatherPageCardHTML(item)).join('');
-                lucide.createIcons();
-                updateWeatherPageCards(slide.items);
-            }
-
-            const bar = document.getElementById('progress-bar');
-            bar.style.transition = 'none';
-            bar.style.width = '0%';
-            setTimeout(() => { bar.style.transition = `width ${SLIDE_DURATION}s linear`; bar.style.width = '100%'; }, 50);
-        }
-
-        function processData(rows) {
-            let dayItems = []; let nightItems = [];
-            let uniqueCities = new Set();
-            let weatherItems = [];
-
-            rows.forEach((row, index) => {
-                let d = { 
-                    ID: index, 
-                    DATA: row[0],       // A
-                    TURNO_RAW: row[1],  // B
-                    EQUIPE: row[2],     // C 
-                    VIAGEM: row[3],     // D
-                    OBRA: row[4],       // E
-                    REGIAO: row[5],     // F
-                    SIN: row[6],        // G
-                    
-                    P_CAM: row[7],      // H
-                    CAM: row[8],        // I
-                    EQUIP: row[9],      // J
-                    P_APOIO: row[10],   // K 
-                    APOIO: row[11],     // L
-
-                    LINK_CAM: row[14] || "",   // O 
-                    LINK_APOIO: row[15] || ""  // P 
-                };
-
-                const colObra = (d.OBRA || "").toString().toUpperCase();
-                const isLongText = colObra.length > 25; 
-                if ((colObra.includes("HORIZONTAL") || colObra.includes("VERTICAL")) && !isLongText) return; 
-                if (!d.EQUIPE || d.EQUIPE === "EQUIPE" || d.EQUIPE === "") return; 
-
-                const turnoCol = (d.TURNO_RAW || "").toUpperCase();
-                let currentSection = turnoCol.includes("NOTURNO") || turnoCol.includes("TURNO-N") ? 'NOTURNO' : 'DIURNO';
-
-                const item = {
-                    TYPE: currentSection, ID: d.ID, DATA: d.DATA || "", VIAGEM: d.VIAGEM || "", 
-                    OBRA: d.OBRA || "---", REGIAO: d.REGIAO || "", SINALIZACAO: d.SIN || "", 
-                    EQUIPE: d.EQUIPE || "", PLACA_CAM: d.P_CAM || "---", CAMINHAO: d.CAM || "",
-                    EQUIP: d.EQUIP || "---", PLACA_APOIO: d.P_APOIO || "---", APOIO: d.APOIO || "",
-                    LINK_CAM: d.LINK_CAM, LINK_APOIO: d.LINK_APOIO
-                };
-                if (currentSection === 'DIURNO') dayItems.push(item); else nightItems.push(item);
-
-                // FILTRA AS CIDADES ÚNICAS
-                if (d.REGIAO && d.REGIAO.trim() !== "" && d.REGIAO !== "---") {
-                    const cityClean = d.REGIAO.trim().toUpperCase();
-                    if (!uniqueCities.has(cityClean)) {
-                        uniqueCities.add(cityClean);
-                        weatherItems.push({ ID: index, REGIAO: d.REGIAO });
-                    }
-                }
-            });
-            
-            slides = [];
-            for (let i = 0; i < dayItems.length; i += MAX_ITEMS) slides.push({ type: 'DIURNO', items: dayItems.slice(i, i + MAX_ITEMS) });
-            for (let i = 0; i < nightItems.length; i += MAX_ITEMS) slides.push({ type: 'NOTURNO', items: nightItems.slice(i, i + MAX_ITEMS) });
-            
-            // INCLUI A TELA DE CLIMA NO FINAL
-            for (let i = 0; i < weatherItems.length; i += MAX_ITEMS) slides.push({ type: 'CLIMA', items: weatherItems.slice(i, i + MAX_ITEMS) });
-
-            currentSlideIndex = 0;
-            if (slides.length > 0) {
-                renderSlide();
-                if(window.slideInterval) clearInterval(window.slideInterval);
-                if(slides.length > 1) { window.slideInterval = setInterval(nextSlide, SLIDE_DURATION * 1000); }
-            } else { loadMockData(); }
-        }
-
-        function atualizarDados() {
-            const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRSrIAzEFpEZV1t2A5FDqY5OuJSc1LX7-4I0hFMUoL3iPoRTSr-JKeyIIhvCH5ZYzYWSLR9g35OUnnC/pub?gid=104037742&single=true&output=csv';
-            const googleUrlNoCache = googleSheetUrl + '&t=' + new Date().getTime();
-            
-            const urls = [
-                googleUrlNoCache
-            ];
-
-            let attempt = 0;
-
-            function tryFetch() {
-                if (attempt >= urls.length) {
-                    document.getElementById('debug-status').innerText = "Falha Geral. Carregando modo offline...";
-                    loadMockData(); 
-                    return;
-                }
-
-                document.getElementById('debug-status').innerText = `Atualizando dados diretos do Google...`;
-
-                fetch(urls[attempt], { cache: "no-store" })
-                    .then(res => {
-                        if (!res.ok) throw new Error("Falha");
-                        return res.text();
-                    })
-                    .then(csv => {
-                        Papa.parse(csv, { 
-                            header: false, 
-                            skipEmptyLines: true, 
-                            encoding: "UTF-8", 
-                            complete: (results) => { processData(results.data); }
-                        }); 
-                    })
-                    .catch(() => {
-                        attempt++;
-                        tryFetch();
-                    });
-            }
-
-            tryFetch();
-            
-            setTimeout(() => {
-                if(document.getElementById('loading').style.display !== 'none') {
-                    loadMockData();
-                }
-            }, 8000);
-        }
-
-        function loadMockData() {
-            const mockCSV = [
-                ["29/12/2025", "TURNO-D", "EQUIPE ALFA", "", "OBRA EXEMPLO (SEM CONEXÃO)", "SAO PAULO", "VERTICAL", "ABC-1234", "VW 8.150", "EQUIPAMENTO X", "XYZ-9876", "FIAT UNO", "", "", "", ""],
-                ["29/12/2025", "TURNO-D", "EQUIPE BETA", "", "MANUTENÇÃO", "JUNDIAI", "HORIZONTAL", "DEF-5678", "MERCEDES", "EQUIPAMENTO Y", "GHI-1234", "GOL", "", "", "", ""]
-            ];
-            processData(mockCSV);
-            document.getElementById('debug-status').innerText = "MODO OFFLINE";
-            document.getElementById('debug-status').className = "text-red-500 font-bold mt-2 animate-pulse";
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            atualizarDados();
-            updateBaseWeather(); 
-        });
-    </script>
-</body>
-</html>
+                            ${btnApoio}
