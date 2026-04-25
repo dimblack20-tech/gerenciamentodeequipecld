@@ -20,14 +20,16 @@
             -webkit-touch-callout: none;
         }
         
-        @media (min-width: 769px) {
+        /* Telas Gigantes (TVs e PCs) - Trava a rolagem */
+        @media (min-width: 1024px) and (min-height: 600px) {
             body { 
                 height: 100vh; 
                 overflow: hidden; 
             }
         }
         
-        @media (max-width: 768px) {
+        /* Celulares (em pé ou paisagem) e Tablets - Libera a rolagem vertical */
+        @media (max-width: 1023px), (max-height: 599px) {
             body { 
                 min-height: 100vh; 
                 height: auto;
@@ -76,7 +78,7 @@
     </header>
 
     <main class="flex-grow w-full relative min-h-0"> 
-        <div id="content-grid" class="grid grid-cols-1 landscape:grid-cols-2 md:grid-cols-2 md:grid-rows-3 gap-3 md:gap-3 w-full h-auto md:h-full pb-16 md:pb-0"></div>
+        <div id="content-grid" class="grid grid-cols-1 landscape:grid-cols-2 md:grid-cols-2 lg:grid-rows-3 gap-3 w-full h-auto lg:h-full pb-16 lg:pb-0"></div>
         
         <div id="loading" class="absolute inset-0 flex items-center justify-center bg-black/95 z-50">
             <div class="text-center">
@@ -412,6 +414,14 @@
             const sinStyle = getSignStyle(data.SINALIZACAO);
             const uniqueId = `weather-${data.ID}`;
 
+            const btnCam = data.LINK_CAM && data.LINK_CAM.length > 5 
+                ? `<a href="${data.LINK_CAM}" target="_blank" class="md:hidden ml-auto bg-blue-600/80 p-1.5 rounded hover:bg-blue-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></a>` 
+                : '';
+            
+            const btnApoio = data.LINK_APOIO && data.LINK_APOIO.length > 5 
+                ? `<a href="${data.LINK_APOIO}" target="_blank" class="md:hidden ml-auto bg-green-600/80 p-1.5 rounded hover:bg-green-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></a>` 
+                : '';
+
             const textoRodizio = themeColor === 'DIURNO' ? '⚠️ RODÍZIO das 07h as 10h' : '⚠️ RODÍZIO das 17h as 20h';
             const camRodizio = (themeColor === 'DIURNO' && isRodizio(data.DATA, data.PLACA_CAM)) 
                 ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">${textoRodizio}</span>` : '';
@@ -419,7 +429,7 @@
                 ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">${textoRodizio}</span>` : '';
 
             return `
-            <div class="${cardBackground} border-l-[4px] md:border-l-[8px] ${borderClass} rounded-r-xl px-2 py-3 md:px-3 md:py-2 shadow-2xl flex flex-col justify-between min-h-[170px] h-auto md:h-full fade-enter-active relative overflow-hidden mb-0">
+            <div class="${cardBackground} border-l-[4px] md:border-l-[8px] ${borderClass} rounded-r-xl px-2 py-3 md:px-3 md:py-2 shadow-2xl flex flex-col justify-between min-h-[170px] h-auto lg:h-full fade-enter-active relative overflow-hidden mb-0">
                 <i data-lucide="hard-hat" class="absolute right-[-10px] top-[-10px] w-12 h-12 md:w-24 md:h-24 text-white opacity-[0.04]"></i>
                 <div class="flex justify-between items-start z-10 shrink-0 gap-2">
                     <div class="flex-1">
@@ -440,12 +450,12 @@
                 </div>
                 <div class="grid grid-cols-2 gap-2 mt-2 z-10 flex-grow content-center">
                     <div class="bg-slate-800/50 p-2 rounded-lg border border-blue-900/50">
-                        <div class="flex items-center gap-1.5 mb-1 text-blue-400 font-bold uppercase text-[9px] md:text-xs neon-text-blue"><i data-lucide="truck" class="w-3 h-3 md:w-4 md:h-4"></i> Caminhão ${camRodizio}</div>
+                        <div class="flex items-center gap-1.5 mb-1 text-blue-400 font-bold uppercase text-[9px] md:text-xs neon-text-blue"><i data-lucide="truck" class="w-3 h-3 md:w-4 md:h-4"></i> Caminhão ${camRodizio} ${btnCam}</div>
                         <div class="text-lg md:text-2xl text-white font-mono font-bold leading-none truncate">${data.PLACA_CAM}</div>
                         <div class="text-blue-300 text-[10px] md:text-xs mt-0.5 font-semibold truncate">${data.CAMINHAO}</div>
                     </div>
                     <div class="bg-slate-800/50 p-2 rounded-lg border border-green-900/50">
-                        <div class="flex items-center gap-1.5 mb-1 text-green-400 font-bold uppercase text-[9px] md:text-xs neon-text-green"><i data-lucide="car" class="w-3 h-3 md:w-4 md:h-4"></i> Apoio ${apoioRodizio}</div>
+                        <div class="flex items-center gap-1.5 mb-1 text-green-400 font-bold uppercase text-[9px] md:text-xs neon-text-green"><i data-lucide="car" class="w-3 h-3 md:w-4 md:h-4"></i> Apoio ${apoioRodizio} ${btnApoio}</div>
                         <div class="text-lg md:text-2xl text-white font-mono font-bold leading-none truncate">${data.PLACA_APOIO}</div>
                         <div class="text-green-300 text-[10px] md:text-xs mt-0.5 font-semibold truncate">${data.APOIO}</div>
                     </div>
@@ -459,7 +469,7 @@
         function createWeatherPageCardHTML(data) {
             const uniqueId = `weather-page-${data.ID}`;
             return `
-            <div class="bg-gray-900 border-l-[4px] md:border-l-[8px] border-blue-500 rounded-r-xl px-4 py-4 shadow-2xl flex flex-col justify-between min-h-[170px] h-auto md:h-full fade-enter-active relative overflow-hidden mb-0">
+            <div class="bg-gray-900 border-l-[4px] md:border-l-[8px] border-blue-500 rounded-r-xl px-4 py-4 shadow-2xl flex flex-col justify-between min-h-[170px] h-auto lg:h-full fade-enter-active relative overflow-hidden mb-0">
                 <i data-lucide="cloud-sun" class="absolute right-[-10px] top-[-10px] w-20 h-20 md:w-32 md:h-32 text-blue-500 opacity-[0.05]"></i>
                 <div class="z-10 flex justify-between items-center mb-3 shrink-0 border-b border-gray-800 pb-2">
                     <span class="text-blue-400 text-lg md:text-2xl font-bold tracking-widest uppercase">${data.REGIAO}</span>
@@ -555,7 +565,6 @@
                 const isLongText = colObra.length > 25; 
                 if ((colObra.includes("HORIZONTAL") || colObra.includes("VERTICAL")) && !isLongText) return; 
                 
-                // NOSSA BARREIRA CONTRA LINHAS VAZIAS DA PLANILHA
                 if (!d.EQUIPE || d.EQUIPE.toUpperCase() === "EQUIPE" || d.EQUIPE === "") return; 
 
                 const turnoCol = (d.TURNO_RAW || "").toUpperCase();
@@ -570,7 +579,6 @@
                 
                 if (currentSection === 'DIURNO') dayItems.push(item); else nightItems.push(item);
 
-                // SEPARA AS CIDADES ÚNICAS (Ignora vazios)
                 if (d.REGIAO && d.REGIAO.trim() !== "" && d.REGIAO !== "---") {
                     const cityClean = d.REGIAO.trim().toUpperCase();
                     if (!uniqueCities.has(cityClean)) {
