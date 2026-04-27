@@ -335,16 +335,18 @@
 
                 if (isWeatherPage) {
                     el.innerHTML = `
-                        <div class="flex justify-center items-center gap-3 w-full mb-2">
-                            <i data-lucide="${getWeatherIconName(w.code)}" class="w-12 h-12 md:w-16 md:h-16 text-yellow-400 drop-shadow-md"></i>
-                            <span class="text-4xl md:text-5xl font-bold text-white leading-none">${w.temp}°</span>
-                            <div class="flex flex-col items-start leading-none ml-2 border-l border-gray-700 pl-3">
-                                <span class="text-xs md:text-sm text-orange-400 font-mono font-bold mb-1">⬆${w.max}°</span>
-                                <span class="text-xs md:text-sm text-blue-300 font-mono font-bold">⬇${w.min}°</span>
+                        <div class="flex-grow flex flex-col justify-center items-center gap-2 md:gap-3 w-full h-full">
+                            <div class="flex justify-center items-center gap-3 w-full">
+                                <i data-lucide="${getWeatherIconName(w.code)}" class="w-12 h-12 md:w-16 md:h-16 text-yellow-400 drop-shadow-md"></i>
+                                <span class="text-4xl md:text-5xl font-bold text-white leading-none font-mono">${w.temp}°</span>
+                                <div class="flex flex-col items-start leading-none ml-2 border-l border-gray-700 pl-3">
+                                    <span class="text-xs md:text-sm text-orange-400 font-mono font-bold mb-1">⬆${w.max}°</span>
+                                    <span class="text-xs md:text-sm text-blue-300 font-mono font-bold">⬇${w.min}°</span>
+                                </div>
                             </div>
+                            <div class="text-sm md:text-lg text-gray-200 font-bold mb-3 w-full text-center tracking-wide uppercase">${getWeatherText(w.code)}</div>
                         </div>
-                        <div class="text-sm md:text-base text-gray-300 font-semibold mb-3 w-full text-center tracking-wide uppercase">${getWeatherText(w.code)}</div>
-                        <div class="flex justify-between items-center w-full pt-3 border-t border-gray-700/80 text-xs md:text-sm text-gray-400 gap-2 px-2">
+                        <div class="flex justify-between items-center w-full pt-3 border-t border-gray-700/80 text-xs md:text-sm text-gray-400 gap-2 px-2 shrink-0">
                             <span class="flex items-center gap-1" title="Chuva"><i data-lucide="droplet" class="w-4 h-4 text-blue-400"></i>${w.rain}%</span>
                             <span class="flex items-center gap-1" title="Umidade"><i data-lucide="droplets" class="w-4 h-4 text-teal-400"></i>${w.humidity}%</span>
                             <span class="flex items-center gap-1" title="Vento"><i data-lucide="wind" class="w-4 h-4 text-gray-400"></i>${w.wind} k/h</span>
@@ -414,7 +416,7 @@
             const apoioRodizio = (themeColor === 'DIURNO' && isRodizio(data.DATA, data.PLACA_APOIO)) 
                 ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">${textoRodizio}</span>` : '';
 
-            // BANNER GIGANTE DE CARREGAMENTO (COLUNA R)
+            // PÍLULA DE STATUS DE CARREGAMENTO CENTRALIZADA E COMPACTA
             let badgeCarga = '';
             const statusCarga = (data.CARGA || "").toUpperCase().trim();
             if(statusCarga) {
@@ -423,24 +425,26 @@
                 let anim = '';
                 
                 if(statusCarga === 'AGUARDANDO') {
-                    statusStyle = 'bg-yellow-900/40 text-yellow-400 border-yellow-500/80 shadow-[0_0_15px_rgba(234,179,8,0.2)]';
-                    icon = '<i data-lucide="clock" class="w-5 h-5 md:w-6 md:h-6"></i>';
+                    statusStyle = 'bg-yellow-900/50 text-yellow-300 border-yellow-600/80';
+                    icon = '<i data-lucide="clock" class="w-3.5 h-3.5 md:w-4 md:h-4"></i>';
                 } else if(statusCarga === 'EM ANDAMENTO') {
-                    statusStyle = 'bg-blue-900/40 text-blue-300 border-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.5)]';
-                    icon = '<i data-lucide="loader" class="w-5 h-5 md:w-6 md:h-6 animate-spin"></i>';
+                    statusStyle = 'bg-blue-900/50 text-blue-200 border-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.3)]';
+                    icon = '<i data-lucide="loader" class="w-3.5 h-3.5 md:w-4 md:h-4 animate-spin"></i>';
                     anim = 'animate-pulse';
                 } else if(statusCarga === 'FINALIZADO') {
-                    statusStyle = 'bg-green-900/40 text-green-400 border-green-500/80 shadow-[0_0_15px_rgba(34,197,94,0.2)]';
-                    icon = '<i data-lucide="check-circle" class="w-5 h-5 md:w-6 md:h-6"></i>';
+                    statusStyle = 'bg-green-900/50 text-green-300 border-green-500/80';
+                    icon = '<i data-lucide="check-circle" class="w-3.5 h-3.5 md:w-4 md:h-4"></i>';
                 }
 
                 if (statusStyle !== '') {
                     badgeCarga = `
-                    <div class="w-full flex items-center justify-center gap-2 md:gap-3 mt-3 border-2 rounded-lg py-2 px-2 ${statusStyle} ${anim}">
-                        <span class="text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold opacity-70 mt-0.5">STATUS:</span>
-                        <span class="text-base md:text-2xl font-black flex items-center gap-2 uppercase tracking-widest drop-shadow-md">
-                            ${icon} ${statusCarga}
-                        </span>
+                    <div class="w-full flex justify-center mt-2 ${anim}">
+                        <div class="inline-flex items-center gap-2 border ${statusStyle} px-3 py-0.5 md:py-1 rounded-full whitespace-nowrap">
+                            <span class="text-[9px] md:text-xs uppercase tracking-widest font-bold opacity-70">CARREGAMENTO:</span>
+                            <span class="text-xs md:text-sm font-black flex items-center gap-1.5 uppercase tracking-wider">
+                                ${icon} ${statusCarga}
+                            </span>
+                        </div>
                     </div>`;
                 }
             }
@@ -460,10 +464,12 @@
                             <span class="text-xl md:text-3xl font-bold text-white tracking-wide block leading-none truncate w-full" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${data.EQUIPE || 'EQUIPE'}</span>
                             <span class="${sinStyle.color} mt-1 text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow inline-flex items-center gap-1 tracking-wide"><i data-lucide="${sinStyle.icon}" class="w-3 h-3"></i> ${sinStyle.label}</span>
                         </div>
-                        ${badgeCarga}
                     </div>
                     <div id="${uniqueId}" class="transition-opacity duration-500 shrink-0 ml-1"><span class="text-[10px] text-gray-500 animate-pulse mt-1">🔎 Buscando Clima...</span></div>
                 </div>
+                
+                ${badgeCarga}
+
                 <div class="grid grid-cols-2 gap-2 mt-2 z-10 flex-grow content-center">
                     <div class="bg-slate-800/50 p-2 rounded-lg border border-blue-900/50">
                         <div class="flex items-center gap-1.5 mb-1 text-blue-400 font-bold uppercase text-[9px] md:text-xs neon-text-blue"><i data-lucide="truck" class="w-3 h-3 md:w-4 md:h-4"></i> Caminhão ${camRodizio}</div>
@@ -487,11 +493,11 @@
             return `
             <div class="bg-gray-900 border-l-[4px] md:border-l-[8px] border-blue-500 rounded-xl px-4 py-4 shadow-xl flex flex-col justify-between min-h-[170px] h-auto lg:h-full fade-enter-active relative overflow-hidden group mb-0">
                 <i data-lucide="cloud-sun" class="absolute right-[-10px] top-[-10px] w-16 h-16 md:w-24 md:h-24 text-blue-500 opacity-[0.05]"></i>
-                <div class="z-10 flex flex-col justify-center items-center mb-3 shrink-0 pb-2 border-b border-gray-800">
+                <div class="z-10 flex flex-col justify-center items-center mb-1 shrink-0 pb-2 border-b border-gray-800">
                     <span class="text-blue-400 text-lg md:text-2xl font-bold tracking-widest uppercase truncate w-full text-center">${data.REGIAO}</span>
                     <span class="text-gray-500 text-[9px] md:text-[10px] uppercase tracking-widest bg-gray-800/50 px-2 py-0.5 rounded mt-1">Previsão Estimada</span>
                 </div>
-                <div id="${uniqueId}" class="flex-grow flex flex-col justify-center items-center transition-opacity duration-500 z-10 w-full h-full">
+                <div id="${uniqueId}" class="flex-grow flex flex-col justify-center items-center gap-2 transition-opacity duration-500 z-10 w-full h-full text-center">
                     <span class="text-[10px] text-gray-500 animate-pulse">🔎 Buscando Clima...</span>
                 </div>
             </div>`;
