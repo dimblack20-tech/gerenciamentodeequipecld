@@ -14,6 +14,7 @@
             color: #e2e8f0; 
             width: 100vw;
             overflow-x: hidden;
+            /* BLOQUEIA SELEÇÃO DE TEXTO PARA O TOQUE NO CELULAR FUNCIONAR LISO */
             -webkit-user-select: none;
             user-select: none;
             -webkit-touch-callout: none;
@@ -69,7 +70,8 @@
         </div>
 
         <div class="w-full md:w-1/3 flex justify-end items-center order-3">
-            <div id="weather-box-general" class="flex flex-col items-end hidden bg-black/60 px-3 py-1.5 rounded-xl border border-gray-700/50 shadow-lg backdrop-blur-sm"></div>
+            <div id="weather-box-general" class="flex flex-col items-end hidden bg-black/60 px-3 py-1.5 rounded-xl border border-gray-700/50 shadow-lg backdrop-blur-sm">
+                </div>
         </div>
     </header>
 
@@ -101,7 +103,7 @@
         const SLIDE_DURATION = 15; 
         const MAX_ITEMS = 6;
         const BASE_LAT = "-23.565"; const BASE_LON = "-46.520"; 
-        
+
         const cityCache = {}; 
         const weatherCache = {}; 
 
@@ -335,7 +337,7 @@
 
                 if (isWeatherPage) {
                     el.innerHTML = `
-                        <div class="flex-grow flex flex-col justify-center items-center gap-2 md:gap-3 w-full h-full">
+                        <div class="flex-grow flex flex-col justify-center items-center gap-2 w-full h-full">
                             <div class="flex justify-center items-center gap-3 w-full">
                                 <i data-lucide="${getWeatherIconName(w.code)}" class="w-12 h-12 md:w-16 md:h-16 text-yellow-400 drop-shadow-md"></i>
                                 <span class="text-4xl md:text-5xl font-bold text-white leading-none font-mono">${w.temp}°</span>
@@ -344,7 +346,7 @@
                                     <span class="text-xs md:text-sm text-blue-300 font-mono font-bold">⬇${w.min}°</span>
                                 </div>
                             </div>
-                            <div class="text-sm md:text-lg text-gray-200 font-bold mb-3 w-full text-center tracking-wide uppercase">${getWeatherText(w.code)}</div>
+                            <div class="text-sm md:text-lg text-gray-200 font-bold mb-2 w-full text-center tracking-wide uppercase">${getWeatherText(w.code)}</div>
                         </div>
                         <div class="flex justify-between items-center w-full pt-3 border-t border-gray-700/80 text-xs md:text-sm text-gray-400 gap-2 px-2 shrink-0">
                             <span class="flex items-center gap-1" title="Chuva"><i data-lucide="droplet" class="w-4 h-4 text-blue-400"></i>${w.rain}%</span>
@@ -416,7 +418,7 @@
             const apoioRodizio = (themeColor === 'DIURNO' && isRodizio(data.DATA, data.PLACA_APOIO)) 
                 ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">${textoRodizio}</span>` : '';
 
-            // PÍLULA DE STATUS DE CARREGAMENTO CENTRALIZADA E COMPACTA
+            // PÍLULA DE CARREGAMENTO REAJUSTADA PARA A MESMA LINHA DA EQUIPE
             let badgeCarga = '';
             const statusCarga = (data.CARGA || "").toUpperCase().trim();
             if(statusCarga) {
@@ -438,12 +440,10 @@
 
                 if (statusStyle !== '') {
                     badgeCarga = `
-                    <div class="w-full flex justify-center mt-2 ${anim}">
-                        <div class="inline-flex items-center gap-2 border ${statusStyle} px-3 py-0.5 md:py-1 rounded-full whitespace-nowrap">
-                            <span class="text-[9px] md:text-xs uppercase tracking-widest font-bold opacity-70">CARREGAMENTO:</span>
-                            <span class="text-xs md:text-sm font-black flex items-center gap-1.5 uppercase tracking-wider">
-                                ${icon} ${statusCarga}
-                            </span>
+                    <div class="ml-2 shrink-0 flex items-center justify-center ${anim}">
+                        <div class="inline-flex items-center gap-1 border ${statusStyle} px-2 py-0.5 md:py-1 rounded shadow-sm">
+                            ${icon}
+                            <span class="text-[9px] md:text-[10px] font-bold uppercase tracking-wider">${statusCarga}</span>
                         </div>
                     </div>`;
                 }
@@ -460,16 +460,17 @@
                                 ${isViagem ? `<span class="bg-rose-700 text-white text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow animate-pulse">VIAGEM</span>` : ''}
                             </div>
                         </div>
-                        <div class="mt-1.5 flex flex-col items-start w-full">
-                            <span class="text-xl md:text-3xl font-bold text-white tracking-wide block leading-none truncate w-full" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${data.EQUIPE || 'EQUIPE'}</span>
-                            <span class="${sinStyle.color} mt-1 text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow inline-flex items-center gap-1 tracking-wide"><i data-lucide="${sinStyle.icon}" class="w-3 h-3"></i> ${sinStyle.label}</span>
+                        <div class="mt-1.5 flex items-center justify-between w-full">
+                            <div class="flex flex-col items-start min-w-0 flex-1">
+                                <span class="text-xl md:text-3xl font-bold text-white tracking-wide block leading-none truncate w-full" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${data.EQUIPE || 'EQUIPE'}</span>
+                                <span class="${sinStyle.color} mt-1 text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow inline-flex items-center gap-1 tracking-wide"><i data-lucide="${sinStyle.icon}" class="w-3 h-3"></i> ${sinStyle.label}</span>
+                            </div>
+                            ${badgeCarga}
                         </div>
                     </div>
                     <div id="${uniqueId}" class="transition-opacity duration-500 shrink-0 ml-1"><span class="text-[10px] text-gray-500 animate-pulse mt-1">🔎 Buscando Clima...</span></div>
                 </div>
                 
-                ${badgeCarga}
-
                 <div class="grid grid-cols-2 gap-2 mt-2 z-10 flex-grow content-center">
                     <div class="bg-slate-800/50 p-2 rounded-lg border border-blue-900/50">
                         <div class="flex items-center gap-1.5 mb-1 text-blue-400 font-bold uppercase text-[9px] md:text-xs neon-text-blue"><i data-lucide="truck" class="w-3 h-3 md:w-4 md:h-4"></i> Caminhão ${camRodizio}</div>
