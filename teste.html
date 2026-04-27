@@ -418,7 +418,7 @@
             const apoioRodizio = (themeColor === 'DIURNO' && isRodizio(data.DATA, data.PLACA_APOIO)) 
                 ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">${textoRodizio}</span>` : '';
 
-            // PÍLULA DE CARREGAMENTO REAJUSTADA PARA A MESMA LINHA DA EQUIPE
+            // PÍLULA DE CARREGAMENTO (AGORA DO LADO DIREITO DO NOME DA EQUIPE, CENTRALIZADA VERTICALMENTE)
             let badgeCarga = '';
             const statusCarga = (data.CARGA || "").toUpperCase().trim();
             if(statusCarga) {
@@ -440,7 +440,7 @@
 
                 if (statusStyle !== '') {
                     badgeCarga = `
-                    <div class="ml-2 shrink-0 flex items-center justify-center ${anim}">
+                    <div class="shrink-0 flex items-center justify-center ${anim}">
                         <div class="inline-flex items-center gap-1 border ${statusStyle} px-2 py-0.5 md:py-1 rounded shadow-sm">
                             ${icon}
                             <span class="text-[9px] md:text-[10px] font-bold uppercase tracking-wider">${statusCarga}</span>
@@ -460,12 +460,12 @@
                                 ${isViagem ? `<span class="bg-rose-700 text-white text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow animate-pulse">VIAGEM</span>` : ''}
                             </div>
                         </div>
-                        <div class="mt-1.5 flex items-center justify-between w-full">
-                            <div class="flex flex-col items-start min-w-0 flex-1">
-                                <span class="text-xl md:text-3xl font-bold text-white tracking-wide block leading-none truncate w-full" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${data.EQUIPE || 'EQUIPE'}</span>
-                                <span class="${sinStyle.color} mt-1 text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow inline-flex items-center gap-1 tracking-wide"><i data-lucide="${sinStyle.icon}" class="w-3 h-3"></i> ${sinStyle.label}</span>
+                        <div class="mt-1.5 flex flex-col items-start w-full">
+                            <div class="flex items-center gap-3 w-full">
+                                <span class="text-xl md:text-3xl font-bold text-white tracking-wide block leading-none truncate min-w-0" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${data.EQUIPE || 'EQUIPE'}</span>
+                                ${badgeCarga}
                             </div>
-                            ${badgeCarga}
+                            <span class="${sinStyle.color} mt-1.5 text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow inline-flex items-center gap-1 tracking-wide"><i data-lucide="${sinStyle.icon}" class="w-3 h-3"></i> ${sinStyle.label}</span>
                         </div>
                     </div>
                     <div id="${uniqueId}" class="transition-opacity duration-500 shrink-0 ml-1"><span class="text-[10px] text-gray-500 animate-pulse mt-1">🔎 Buscando Clima...</span></div>
