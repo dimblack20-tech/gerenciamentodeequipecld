@@ -104,7 +104,7 @@
         const weatherCache = {}; 
 
         function getWeatherText(code) {
-            if (code === 0) return 'CÃ©u limpo';
+            if (code === 0) return 'Céu limpo';
             if (code === 1) return 'Quase limpo';
             if (code === 2) return 'Parcialmente Nublado';
             if (code === 3) return 'Nublado';
@@ -137,7 +137,7 @@
                     box.innerHTML = `
                         <div class="flex items-center gap-2 text-red-400 py-1 px-2">
                             <i data-lucide="satellite-dish" class="w-5 h-5 animate-pulse"></i>
-                            <span class="text-xs font-bold uppercase tracking-widest">SatÃ©lite Offline</span>
+                            <span class="text-xs font-bold uppercase tracking-widest">Satélite Offline</span>
                         </div>`;
                     lucide.createIcons();
                     return;
@@ -147,13 +147,13 @@
                     <span class="text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-bold text-gray-400 mb-0.5">BASE ARICANDUVA</span>
                     <div class="flex items-center gap-3">
                         <i data-lucide="${getWeatherIconName(data.code)}" class="w-6 h-6 md:w-10 md:h-10 text-yellow-400"></i>
-                        <span class="text-3xl md:text-5xl font-bold font-mono text-white leading-none">${data.temp}Â°</span>
+                        <span class="text-3xl md:text-5xl font-bold font-mono text-white leading-none">${data.temp}°</span>
                         <div class="h-8 w-px bg-gray-700 mx-1"></div>
                         <div class="flex flex-col leading-none">
                             <span class="text-[10px] md:text-sm text-gray-200 font-bold mb-1">${getWeatherText(data.code)}</span>
                             <div class="flex gap-2 text-[9px] md:text-xs text-gray-400 mt-0.5">
-                                <span class="text-orange-400 font-bold">â¬†${data.max}Â°</span>
-                                <span class="text-blue-300 font-bold">â¬‡${data.min}Â°</span>
+                                <span class="text-orange-400 font-bold">⬆${data.max}°</span>
+                                <span class="text-blue-300 font-bold">⬇${data.min}°</span>
                                 <span class="flex items-center gap-0.5 ml-1" title="Chuva"><i data-lucide="droplet" class="w-3 h-3 text-blue-400"></i> ${data.rain}%</span>
                                 <span class="flex items-center gap-0.5" title="Vento"><i data-lucide="wind" class="w-3 h-3 text-gray-400"></i> ${data.wind} km/h</span>
                             </div>
@@ -167,7 +167,7 @@
             const cacheKey = `${lat},${lon}`;
             const now = Date.now();
             
-            // LÃ“GICA INTELIGENTE: Guarda sucesso por 1 hora. Guarda falha sÃ³ por 10 min.
+            // LÓGICA INTELIGENTE: Guarda sucesso por 1 hora. Guarda falha só por 10 min.
             if (weatherCache[cacheKey]) {
                 const age = now - weatherCache[cacheKey].timestamp;
                 if (weatherCache[cacheKey].data && age < 3600000) return weatherCache[cacheKey].data; // 1 hora
@@ -206,7 +206,7 @@
             if(cityCache[clean]) {
                 const age = now - cityCache[clean].timestamp;
                 if(cityCache[clean].data !== "NOT_FOUND" && age < 86400000) return cityCache[clean].data; // Guarda cidade por 24h
-                if(cityCache[clean].data === "NOT_FOUND" && age < 600000) return null; // Se nÃ£o achou, tenta de novo em 10 min
+                if(cityCache[clean].data === "NOT_FOUND" && age < 600000) return null; // Se não achou, tenta de novo em 10 min
             }
 
             try {
@@ -246,7 +246,7 @@
                 if(!el) continue;
                 if (!item.REGIAO || item.REGIAO.trim() === "" || item.REGIAO === "---") { el.innerHTML = ""; continue; }
                 
-                el.innerHTML = `<span class="text-[10px] text-gray-500 animate-pulse mt-1">ðŸ”Ž Buscando Clima...</span>`;
+                el.innerHTML = `<span class="text-[10px] text-gray-500 animate-pulse mt-1">🔎 Buscando Clima...</span>`;
                 
                 const coords = await resolveCity(item.REGIAO);
                 
@@ -265,11 +265,11 @@
                                 <div class="flex justify-between items-center gap-3">
                                     <div class="flex items-center gap-2">
                                         <i data-lucide="${getWeatherIconName(w.code)}" class="w-6 h-6 md:w-8 md:h-8 text-yellow-400 drop-shadow-md"></i>
-                                        <span class="text-base md:text-2xl font-bold text-white leading-none">${w.temp}Â°</span>
+                                        <span class="text-base md:text-2xl font-bold text-white leading-none">${w.temp}°</span>
                                     </div>
                                     <div class="flex flex-col items-end leading-none">
-                                        <span class="text-[9px] md:text-[11px] text-orange-400 font-mono font-bold mb-0.5">â¬†${w.max}Â°</span>
-                                        <span class="text-[9px] md:text-[11px] text-blue-300 font-mono font-bold">â¬‡${w.min}Â°</span>
+                                        <span class="text-[9px] md:text-[11px] text-orange-400 font-mono font-bold mb-0.5">⬆${w.max}°</span>
+                                        <span class="text-[9px] md:text-[11px] text-blue-300 font-mono font-bold">⬇${w.min}°</span>
                                     </div>
                                 </div>
                                 <div class="text-[11px] md:text-xs text-gray-300 font-semibold mt-2 mb-1.5 truncate tracking-wide">${getWeatherText(w.code)}</div>
@@ -315,7 +315,7 @@
         let currentSlideIndex = 0;
 
         function getSignStyle(sin) {
-            if (!sin) return { color: "bg-gray-800 text-gray-400 border border-gray-700", icon: "hash", label: "PADRÃƒO" };
+            if (!sin) return { color: "bg-gray-800 text-gray-400 border border-gray-700", icon: "hash", label: "PADRÃO" };
             const text = sin.toUpperCase();
             if (text.includes("VERTICAL")) return { color: "bg-orange-600 text-white border border-orange-400 shadow-lg", icon: "signpost", label: "VERTICAL" };
             if (text.includes("HORIZONTAL")) return { color: "bg-cyan-600 text-white border border-cyan-400 shadow-lg", icon: "minus", label: "HORIZ." };
@@ -362,8 +362,8 @@
                 ? `<a href="${data.LINK_APOIO}" target="_blank" class="md:hidden ml-auto bg-green-600/80 p-1.5 rounded hover:bg-green-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></a>` 
                 : '';
 
-            // TEXTO DO RODÃZIO DEPENDENDO DO TURNO
-            const textoRodizio = themeColor === 'DIURNO' ? 'âš ï¸ RODÃZIO das 07h as 10h' : 'âš ï¸ RODÃZIO das 17h as 20h';
+            // TEXTO DO RODÍZIO DEPENDENDO DO TURNO
+            const textoRodizio = themeColor === 'DIURNO' ? '⚠️ RODÍZIO das 07h as 10h' : '⚠️ RODÍZIO das 17h as 20h';
 
             const camRodizio = isRodizio(data.DATA, data.PLACA_CAM) 
                 ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">${textoRodizio}</span>` 
@@ -396,7 +396,7 @@
                 <div class="grid grid-cols-2 gap-2 mt-2 z-10 flex-grow content-center">
                     <div class="bg-slate-800/50 p-2 rounded-lg border border-blue-900/50 relative">
                         <div class="flex items-center gap-1.5 mb-1 text-blue-400 font-bold uppercase text-[9px] md:text-xs tracking-wider neon-text-blue">
-                            <i data-lucide="truck" class="w-3 h-3 md:w-4 md:h-4"></i> CaminhÃ£o
+                            <i data-lucide="truck" class="w-3 h-3 md:w-4 md:h-4"></i> Caminhão
                             ${camRodizio}
                             ${btnCam} </div>
                         <div class="text-lg md:text-2xl text-white font-mono font-bold leading-none tracking-wide truncate">${data.PLACA_CAM}</div>
@@ -465,7 +465,7 @@
             const pageCount = document.getElementById('page-count');
             
             dateDisplay.innerText = slide.items.length > 0 ? slide.items[0].DATA : "--/--";
-            pageCount.innerText = `PÃGINA ${currentSlideIndex + 1} / ${slides.length}`;
+            pageCount.innerText = `PÁGINA ${currentSlideIndex + 1} / ${slides.length}`;
 
             if (slide.type === 'DIURNO') {
                 title.innerText = "ESCALA DIURNA";
@@ -593,8 +593,8 @@
 
         function loadMockData() {
             const mockCSV = [
-                ["29/12/2025", "TURNO-D", "EQUIPE ALFA", "", "OBRA EXEMPLO (SEM CONEXÃƒO)", "SAO PAULO", "VERTICAL", "ABC-1234", "VW 8.150", "EQUIPAMENTO X", "XYZ-9876", "FIAT UNO", "", "", "", ""],
-                ["29/12/2025", "TURNO-D", "EQUIPE BETA", "", "MANUTENÃ‡ÃƒO", "JUNDIAI", "HORIZONTAL", "DEF-5678", "MERCEDES", "EQUIPAMENTO Y", "GHI-1234", "GOL", "", "", "", ""]
+                ["29/12/2025", "TURNO-D", "EQUIPE ALFA", "", "OBRA EXEMPLO (SEM CONEXÃO)", "SAO PAULO", "VERTICAL", "ABC-1234", "VW 8.150", "EQUIPAMENTO X", "XYZ-9876", "FIAT UNO", "", "", "", ""],
+                ["29/12/2025", "TURNO-D", "EQUIPE BETA", "", "MANUTENÇÃO", "JUNDIAI", "HORIZONTAL", "DEF-5678", "MERCEDES", "EQUIPAMENTO Y", "GHI-1234", "GOL", "", "", "", ""]
             ];
             processData(mockCSV);
             document.getElementById('debug-status').innerText = "MODO OFFLINE";
