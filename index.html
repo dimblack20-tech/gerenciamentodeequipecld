@@ -1,4 +1,4 @@
-<index.html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -16,14 +16,16 @@
             overflow-x: hidden;
         }
         
-        @media (min-width: 769px) {
+        /* Telas Gigantes (TVs e PCs) - Trava a rolagem */
+        @media (min-width: 1024px) and (min-height: 600px) {
             body { 
                 height: 100vh; 
                 overflow: hidden; 
             }
         }
         
-        @media (max-width: 768px) {
+        /* Celulares (em pé ou paisagem) e Tablets - Libera a rolagem vertical */
+        @media (max-width: 1023px), (max-height: 599px) {
             body { 
                 min-height: 100vh; 
                 height: auto;
@@ -72,7 +74,7 @@
     </header>
 
     <main class="flex-grow w-full relative min-h-0"> 
-        <div id="content-grid" class="grid grid-cols-1 landscape:grid-cols-2 md:grid-cols-2 md:grid-rows-3 gap-3 md:gap-3 w-full h-auto md:h-full pb-16 md:pb-0"></div>
+        <div id="content-grid" class="grid grid-cols-1 landscape:grid-cols-2 md:grid-cols-2 lg:grid-rows-3 gap-3 w-full h-auto lg:h-full pb-16 lg:pb-0"></div>
         
         <div id="loading" class="absolute inset-0 flex items-center justify-center bg-black/95 z-50">
             <div class="text-center">
@@ -167,11 +169,10 @@
             const cacheKey = `${lat},${lon}`;
             const now = Date.now();
             
-            // LÓGICA INTELIGENTE: Guarda sucesso por 1 hora. Guarda falha só por 10 min.
             if (weatherCache[cacheKey]) {
                 const age = now - weatherCache[cacheKey].timestamp;
-                if (weatherCache[cacheKey].data && age < 3600000) return weatherCache[cacheKey].data; // 1 hora
-                if (!weatherCache[cacheKey].data && age < 600000) return null; // 10 min
+                if (weatherCache[cacheKey].data && age < 3600000) return weatherCache[cacheKey].data; 
+                if (!weatherCache[cacheKey].data && age < 600000) return null; 
             }
             
             try {
@@ -205,8 +206,8 @@
             const now = Date.now();
             if(cityCache[clean]) {
                 const age = now - cityCache[clean].timestamp;
-                if(cityCache[clean].data !== "NOT_FOUND" && age < 86400000) return cityCache[clean].data; // Guarda cidade por 24h
-                if(cityCache[clean].data === "NOT_FOUND" && age < 600000) return null; // Se não achou, tenta de novo em 10 min
+                if(cityCache[clean].data !== "NOT_FOUND" && age < 86400000) return cityCache[clean].data; 
+                if(cityCache[clean].data === "NOT_FOUND" && age < 600000) return null; 
             }
 
             try {
@@ -362,7 +363,6 @@
                 ? `<a href="${data.LINK_APOIO}" target="_blank" class="md:hidden ml-auto bg-green-600/80 p-1.5 rounded hover:bg-green-500 flex items-center justify-center"><i data-lucide="map-pin" class="w-4 h-4 text-white"></i></a>` 
                 : '';
 
-            // TEXTO DO RODÍZIO DEPENDENDO DO TURNO
             const textoRodizio = themeColor === 'DIURNO' ? '⚠️ RODÍZIO das 07h as 10h' : '⚠️ RODÍZIO das 17h as 20h';
 
             const camRodizio = isRodizio(data.DATA, data.PLACA_CAM) 
@@ -373,22 +373,55 @@
                 ? `<span class="bg-red-600 text-white text-[7px] md:text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]">${textoRodizio}</span>` 
                 : '';
 
+            // PÍLULA DE STATUS (SÓLIDA E VIBRANTE)
+            let badgeCarga = '';
+            const statusCarga = (data.CARGA || "").toUpperCase().trim();
+            if(statusCarga) {
+                let statusStyle = '';
+                let icon = '';
+                let anim = '';
+                
+                if(statusCarga === 'AGUARDANDO') {
+                    statusStyle = 'bg-yellow-400 text-black border-yellow-500 shadow-[0_0_15px_rgba(250,204,21,0.6)]';
+                    icon = '<i data-lucide="clock" class="w-4 h-4 md:w-5 md:h-5"></i>';
+                } else if(statusCarga === 'EM ANDAMENTO') {
+                    statusStyle = 'bg-blue-600 text-white border-blue-400 shadow-[0_0_15px_rgba(37,99,235,0.8)]';
+                    icon = '<i data-lucide="loader" class="w-4 h-4 md:w-5 md:h-5 animate-spin"></i>';
+                    anim = 'animate-pulse';
+                } else if(statusCarga === 'FINALIZADO') {
+                    statusStyle = 'bg-green-500 text-white border-green-400 shadow-[0_0_15px_rgba(34,197,94,0.6)]';
+                    icon = '<i data-lucide="check-circle" class="w-4 h-4 md:w-5 md:h-5"></i>';
+                }
+
+                if (statusStyle !== '') {
+                    badgeCarga = `
+                    <div class="shrink-0 flex items-center justify-center ${anim}">
+                        <div class="inline-flex items-center gap-1 border-2 ${statusStyle} px-2 py-0.5 md:py-1 rounded shadow-lg">
+                            ${icon}
+                            <span class="text-[8px] md:text-[9px] font-bold uppercase tracking-widest opacity-80 mr-0.5">CARGA:</span>
+                            <span class="text-[10px] md:text-xs font-black uppercase tracking-wider">${statusCarga}</span>
+                        </div>
+                    </div>`;
+                }
+            }
+
             return `
-            <div class="${cardBackground} border-l-[4px] md:border-l-[8px] ${borderClass} rounded-r-xl px-2 py-3 md:px-3 md:py-2 shadow-2xl flex flex-col justify-between min-h-[170px] h-auto md:h-full fade-enter-active relative overflow-hidden group transition-colors duration-500 mb-0">
+            <div class="${cardBackground} border-l-[4px] md:border-l-[8px] ${borderClass} rounded-r-xl px-2 py-3 md:px-3 md:py-2 shadow-2xl flex flex-col justify-between min-h-[170px] h-auto lg:h-full fade-enter-active relative overflow-hidden group transition-colors duration-500 mb-0">
                 <i data-lucide="hard-hat" class="absolute right-[-10px] top-[-10px] w-12 h-12 md:w-24 md:h-24 text-white opacity-[0.04]"></i>
                 <div class="flex justify-between items-start z-10 shrink-0 gap-2">
-                    <div class="flex-1">
+                    <div class="flex-1 min-w-0 w-full">
                         <div class="flex justify-between items-start w-full">
                             <div class="flex flex-wrap gap-1 items-center">
                                 <span class="${badgeClass} text-sm md:text-xl font-bold px-2 py-0.5 rounded shadow inline-block tracking-wide truncate max-w-[150px] md:max-w-none">${data.OBRA}</span>
                                 ${isViagem ? `<span class="bg-rose-700 text-white border border-rose-500 text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow inline-flex items-center gap-1 tracking-wide animate-pulse"><i data-lucide="map-pin" class="w-3 h-3"></i> VIAGEM</span>` : ''}
                             </div>
                         </div>
-                        <div class="mt-1.5 flex justify-between items-center">
-                             <div>
-                                <span class="text-xl md:text-3xl font-bold text-white tracking-wide block leading-none truncate" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${data.EQUIPE || 'EQUIPE'}</span>
-                                <span class="${sinStyle.color} mt-1 text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow inline-flex items-center gap-1 tracking-wide"><i data-lucide="${sinStyle.icon}" class="w-3 h-3"></i> ${sinStyle.label}</span>
-                             </div>
+                        <div class="mt-1.5 flex flex-col items-start w-full">
+                            <div class="flex items-center gap-3 w-full">
+                                <span class="text-xl md:text-3xl font-bold text-white tracking-wide block leading-none truncate min-w-0" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${data.EQUIPE || 'EQUIPE'}</span>
+                                ${badgeCarga}
+                            </div>
+                            <span class="${sinStyle.color} mt-1 text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded shadow inline-flex items-center gap-1 tracking-wide"><i data-lucide="${sinStyle.icon}" class="w-3 h-3"></i> ${sinStyle.label}</span>
                         </div>
                     </div>
                     <div id="${uniqueId}" class="transition-opacity duration-500 shrink-0"></div>
@@ -511,7 +544,8 @@
                     APOIO: row[11],     // L
 
                     LINK_CAM: row[14] || "",   // O 
-                    LINK_APOIO: row[15] || ""  // P 
+                    LINK_APOIO: row[15] || "", // P
+                    CARGA: row[17] || ""       // R (STATUS DE CARGA)
                 };
 
                 const colObra = (d.OBRA || "").toString().toUpperCase();
@@ -527,7 +561,7 @@
                     OBRA: d.OBRA || "---", REGIAO: d.REGIAO || "", SINALIZACAO: d.SIN || "", 
                     EQUIPE: d.EQUIPE || "", PLACA_CAM: d.P_CAM || "---", CAMINHAO: d.CAM || "",
                     EQUIP: d.EQUIP || "---", PLACA_APOIO: d.P_APOIO || "---", APOIO: d.APOIO || "",
-                    LINK_CAM: d.LINK_CAM, LINK_APOIO: d.LINK_APOIO
+                    LINK_CAM: d.LINK_CAM, LINK_APOIO: d.LINK_APOIO, CARGA: d.CARGA
                 };
                 if (currentSection === 'DIURNO') dayItems.push(item); else nightItems.push(item);
             });
@@ -593,8 +627,8 @@
 
         function loadMockData() {
             const mockCSV = [
-                ["29/12/2025", "TURNO-D", "EQUIPE ALFA", "", "OBRA EXEMPLO (SEM CONEXÃO)", "SAO PAULO", "VERTICAL", "ABC-1234", "VW 8.150", "EQUIPAMENTO X", "XYZ-9876", "FIAT UNO", "", "", "", ""],
-                ["29/12/2025", "TURNO-D", "EQUIPE BETA", "", "MANUTENÇÃO", "JUNDIAI", "HORIZONTAL", "DEF-5678", "MERCEDES", "EQUIPAMENTO Y", "GHI-1234", "GOL", "", "", "", ""]
+                ["29/12/2025", "TURNO-D", "EQUIPE ALFA", "", "OBRA EXEMPLO (SEM CONEXÃO)", "SAO PAULO", "VERTICAL", "ABC-1234", "VW 8.150", "EQUIPAMENTO X", "XYZ-9876", "FIAT UNO", "", "", "", "", "", "EM ANDAMENTO"],
+                ["29/12/2025", "TURNO-D", "EQUIPE BETA", "", "MANUTENÇÃO", "JUNDIAI", "HORIZONTAL", "DEF-5678", "MERCEDES", "EQUIPAMENTO Y", "GHI-1234", "GOL", "", "", "", "", "", "AGUARDANDO"]
             ];
             processData(mockCSV);
             document.getElementById('debug-status').innerText = "MODO OFFLINE";
