@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório SH - CLD</title>
+    <!-- Bibliotecas para gerar o PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.autotable.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        input { display: block; width: 100%; padding: 8px; margin-top: 5px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h2>Preenchimento - Sinalização Horizontal (SH)</h2>
+    <div class="form-group">
+        <label>Obra:</label> <input type="text" id="obra">
+        <label>Data:</label> <input type="date" id="data">
+        <label>Encarregado:</label> <input type="text" id="encarregado">
+    </div>
+    
+    <button onclick="gerarPDF()">Gerar PDF Profissional</button>
+
+    <script>
+        function gerarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Adicionando cabeçalho igual ao seu
+            doc.setFontSize(16);
+            doc.text("RELATÓRIO DE PRODUÇÃO - SINALIZAÇÃO HORIZONTAL", 10, 20);
+            
+            // Inserindo dados
+            doc.setFontSize(12);
+            doc.text("Obra: " + document.getElementById('obra').value, 10, 40);
+            doc.text("Data: " + document.getElementById('data').value, 100, 40);
+            doc.text("Encarregado: " + document.getElementById('encarregado').value, 10, 50);
+
+            // Tabela com os dados (AutoTable)
+            doc.autoTable({
+                startY: 60,
+                head: [['Serviço', 'Sigla', 'Marca', 'Observação']],
+                body: [
+                    ['BI-COMPONENTE', 'BC', 'FAIXA CONTINUA', 'OK'],
+                ],
+            });
+
+            doc.save("Relatorio_SH.pdf");
+        }
+    </script>
+</body>
+</html>
